@@ -20,6 +20,7 @@ import {
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AutocompleteInput } from '@/components/ui/autocomplete-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -289,20 +290,32 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="pickupCity">City *</Label>
-                <Input
+                <AutocompleteInput
                   id="pickupCity"
                   placeholder="Mumbai"
                   value={formData.pickupCity}
-                  onChange={(e) => updateField('pickupCity', e.target.value)}
+                  onChange={(value) => updateField('pickupCity', value)}
+                  onSelect={(suggestion) => {
+                    if (suggestion.pincode && !formData.pickupPincode) {
+                      updateField('pickupPincode', suggestion.pincode);
+                    }
+                  }}
+                  type="city"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="pickupPincode">Pincode *</Label>
-                <Input
+                <AutocompleteInput
                   id="pickupPincode"
                   placeholder="400001"
                   value={formData.pickupPincode}
-                  onChange={(e) => updateField('pickupPincode', e.target.value)}
+                  onChange={(value) => updateField('pickupPincode', value)}
+                  onSelect={(suggestion) => {
+                    if (suggestion.city && !formData.pickupCity) {
+                      updateField('pickupCity', suggestion.city);
+                    }
+                  }}
+                  type="pincode"
                 />
               </div>
             </div>
@@ -401,20 +414,32 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="dropCity">City *</Label>
-                <Input
+                <AutocompleteInput
                   id="dropCity"
                   placeholder="Pune"
                   value={formData.dropCity}
-                  onChange={(e) => updateField('dropCity', e.target.value)}
+                  onChange={(value) => updateField('dropCity', value)}
+                  onSelect={(suggestion) => {
+                    if (suggestion.pincode && !formData.dropPincode) {
+                      updateField('dropPincode', suggestion.pincode);
+                    }
+                  }}
+                  type="city"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="dropPincode">Pincode *</Label>
-                <Input
+                <AutocompleteInput
                   id="dropPincode"
                   placeholder="411001"
                   value={formData.dropPincode}
-                  onChange={(e) => updateField('dropPincode', e.target.value)}
+                  onChange={(value) => updateField('dropPincode', value)}
+                  onSelect={(suggestion) => {
+                    if (suggestion.city && !formData.dropCity) {
+                      updateField('dropCity', suggestion.city);
+                    }
+                  }}
+                  type="pincode"
                 />
               </div>
             </div>
