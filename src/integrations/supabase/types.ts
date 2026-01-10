@@ -14,16 +14,258 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_number: string
+          invoice_url: string | null
+          is_paid: boolean | null
+          paid_at: string | null
+          sender_id: string | null
+          shipment_id: string
+          tax_amount: number | null
+          total_amount: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_number: string
+          invoice_url?: string | null
+          is_paid?: boolean | null
+          paid_at?: string | null
+          sender_id?: string | null
+          shipment_id: string
+          tax_amount?: number | null
+          total_amount: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_number?: string
+          invoice_url?: string | null
+          is_paid?: boolean | null
+          paid_at?: string | null
+          sender_id?: string | null
+          shipment_id?: string
+          tax_amount?: number | null
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      shipments: {
+        Row: {
+          carbon_score: number | null
+          created_at: string
+          delivered_at: string | null
+          delivery_address: string
+          delivery_city: string
+          delivery_lat: number | null
+          delivery_lng: number | null
+          delivery_otp: string
+          delivery_pincode: string
+          description: string | null
+          dimensions: string | null
+          distance_km: number | null
+          driver_id: string | null
+          driver_lat: number | null
+          driver_lng: number | null
+          estimated_cost: number | null
+          final_cost: number | null
+          id: string
+          is_fragile: boolean | null
+          package_type: Database["public"]["Enums"]["package_type"]
+          picked_up_at: string | null
+          pickup_address: string
+          pickup_city: string
+          pickup_contact_name: string
+          pickup_contact_phone: string
+          pickup_date: string
+          pickup_lat: number | null
+          pickup_lng: number | null
+          pickup_otp: string
+          pickup_pincode: string
+          pickup_time_slot: string | null
+          proof_of_delivery_url: string | null
+          receiver_name: string
+          receiver_phone: string
+          sender_id: string | null
+          status: Database["public"]["Enums"]["shipment_status"]
+          tracking_id: string
+          updated_at: string
+          weight: number | null
+        }
+        Insert: {
+          carbon_score?: number | null
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address: string
+          delivery_city: string
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          delivery_otp: string
+          delivery_pincode: string
+          description?: string | null
+          dimensions?: string | null
+          distance_km?: number | null
+          driver_id?: string | null
+          driver_lat?: number | null
+          driver_lng?: number | null
+          estimated_cost?: number | null
+          final_cost?: number | null
+          id?: string
+          is_fragile?: boolean | null
+          package_type?: Database["public"]["Enums"]["package_type"]
+          picked_up_at?: string | null
+          pickup_address: string
+          pickup_city: string
+          pickup_contact_name: string
+          pickup_contact_phone: string
+          pickup_date: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          pickup_otp: string
+          pickup_pincode: string
+          pickup_time_slot?: string | null
+          proof_of_delivery_url?: string | null
+          receiver_name: string
+          receiver_phone: string
+          sender_id?: string | null
+          status?: Database["public"]["Enums"]["shipment_status"]
+          tracking_id: string
+          updated_at?: string
+          weight?: number | null
+        }
+        Update: {
+          carbon_score?: number | null
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address?: string
+          delivery_city?: string
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          delivery_otp?: string
+          delivery_pincode?: string
+          description?: string | null
+          dimensions?: string | null
+          distance_km?: number | null
+          driver_id?: string | null
+          driver_lat?: number | null
+          driver_lng?: number | null
+          estimated_cost?: number | null
+          final_cost?: number | null
+          id?: string
+          is_fragile?: boolean | null
+          package_type?: Database["public"]["Enums"]["package_type"]
+          picked_up_at?: string | null
+          pickup_address?: string
+          pickup_city?: string
+          pickup_contact_name?: string
+          pickup_contact_phone?: string
+          pickup_date?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          pickup_otp?: string
+          pickup_pincode?: string
+          pickup_time_slot?: string | null
+          proof_of_delivery_url?: string | null
+          receiver_name?: string
+          receiver_phone?: string
+          sender_id?: string | null
+          status?: Database["public"]["Enums"]["shipment_status"]
+          tracking_id?: string
+          updated_at?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_invoice_number: { Args: never; Returns: string }
+      generate_tracking_id: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "manager" | "driver" | "sender"
+      package_type: "DOCUMENTS" | "PARCEL" | "FRAGILE" | "HEAVY" | "PERISHABLE"
+      shipment_status:
+        | "PENDING"
+        | "CONFIRMED"
+        | "PICKUP_READY"
+        | "IN_TRANSIT"
+        | "DELIVERED"
+        | "CANCELLED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +392,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "manager", "driver", "sender"],
+      package_type: ["DOCUMENTS", "PARCEL", "FRAGILE", "HEAVY", "PERISHABLE"],
+      shipment_status: [
+        "PENDING",
+        "CONFIRMED",
+        "PICKUP_READY",
+        "IN_TRANSIT",
+        "DELIVERED",
+        "CANCELLED",
+      ],
+    },
   },
 } as const
