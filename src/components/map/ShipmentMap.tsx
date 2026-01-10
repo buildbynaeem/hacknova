@@ -509,112 +509,111 @@ const ShipmentMap: React.FC<ShipmentMapProps> = ({
         {allPositions.length > 0 && <MapUpdater positions={allPositions} />}
 
         {/* Driver to Pickup route (dashed orange) */}
-        {showRoute && driverToPickupRoute && (
-          <>
-            <Polyline
-              positions={driverToPickupRoute}
-              pathOptions={{
-                color: '#000',
-                weight: 5,
-                opacity: 0.1,
-              }}
-            />
-            <Polyline
-              positions={driverToPickupRoute}
-              pathOptions={{
-                color: '#f97316',
-                weight: 3,
-                opacity: 0.9,
-                dashArray: '8, 8',
-              }}
-            />
-          </>
-        )}
+        {showRoute && driverToPickupRoute && [
+          <Polyline
+            key="driver-pickup-shadow"
+            positions={driverToPickupRoute}
+            pathOptions={{
+              color: '#000',
+              weight: 5,
+              opacity: 0.1,
+            }}
+          />,
+          <Polyline
+            key="driver-pickup-line"
+            positions={driverToPickupRoute}
+            pathOptions={{
+              color: '#f97316',
+              weight: 3,
+              opacity: 0.9,
+              dashArray: '8, 8',
+            }}
+          />
+        ]}
 
         {/* Route comparison mode - show all routes */}
-        {showRoute && showRouteComparison && pickupPosition && deliveryPosition && (
-          <>
-            {/* Non-selected routes (faded) */}
-            {(['eco', 'standard', 'fast'] as const).filter(id => id !== selectedRoute).map((routeId) => {
-              const route = routeOptions.find(r => r.id === routeId);
-              const waypoints = routeWaypoints[routeId];
-              if (!route || !waypoints) return null;
-              
-              return (
-                <Polyline
-                  key={routeId}
-                  positions={waypoints}
-                  pathOptions={{
-                    color: route.color,
-                    weight: 3,
-                    opacity: 0.3,
-                    dashArray: '5, 10',
-                  }}
-                />
-              );
-            })}
+        {showRoute && showRouteComparison && pickupPosition && deliveryPosition && 
+          (['eco', 'standard', 'fast'] as const).filter(id => id !== selectedRoute).map((routeId) => {
+            const route = routeOptions.find(r => r.id === routeId);
+            const waypoints = routeWaypoints[routeId];
+            if (!route || !waypoints) return null;
             
-            {/* Selected route (highlighted) */}
-            {selectedRouteOption && routeWaypoints[selectedRoute] && (
-              <>
-                <Polyline
-                  positions={routeWaypoints[selectedRoute]}
-                  pathOptions={{
-                    color: '#000',
-                    weight: 8,
-                    opacity: 0.1,
-                  }}
-                />
-                <Polyline
-                  positions={routeWaypoints[selectedRoute]}
-                  pathOptions={{
-                    color: selectedRouteOption.color,
-                    weight: 10,
-                    opacity: 0.25,
-                  }}
-                />
-                <Polyline
-                  positions={routeWaypoints[selectedRoute]}
-                  pathOptions={{
-                    color: selectedRouteOption.color,
-                    weight: 4,
-                    opacity: 1,
-                  }}
-                />
-              </>
-            )}
-          </>
-        )}
+            return (
+              <Polyline
+                key={routeId}
+                positions={waypoints}
+                pathOptions={{
+                  color: route.color,
+                  weight: 3,
+                  opacity: 0.3,
+                  dashArray: '5, 10',
+                }}
+              />
+            );
+          })
+        }
+        
+        {/* Selected route (highlighted) */}
+        {showRoute && showRouteComparison && selectedRouteOption && routeWaypoints[selectedRoute] && [
+          <Polyline
+            key="selected-shadow"
+            positions={routeWaypoints[selectedRoute]}
+            pathOptions={{
+              color: '#000',
+              weight: 8,
+              opacity: 0.1,
+            }}
+          />,
+          <Polyline
+            key="selected-glow"
+            positions={routeWaypoints[selectedRoute]}
+            pathOptions={{
+              color: selectedRouteOption.color,
+              weight: 10,
+              opacity: 0.25,
+            }}
+          />,
+          <Polyline
+            key="selected-line"
+            positions={routeWaypoints[selectedRoute]}
+            pathOptions={{
+              color: selectedRouteOption.color,
+              weight: 4,
+              opacity: 1,
+            }}
+          />
+        ]}
 
         {/* Single route mode (eco by default) */}
-        {showRoute && !showRouteComparison && routeWaypoints.eco && (
-          <>
-            <Polyline
-              positions={routeWaypoints.eco}
-              pathOptions={{
-                color: '#000',
-                weight: 8,
-                opacity: 0.1,
-              }}
-            />
-            <Polyline
-              positions={routeWaypoints.eco}
-              pathOptions={{
-                color: '#22c55e',
-                weight: 12,
-                opacity: 0.2,
-              }}
-            />
-            <Polyline
-              positions={routeWaypoints.eco}
-              pathOptions={{
-                color: '#22c55e',
-                weight: 4,
-                opacity: 1,
-              }}
-            />
-          </>
-        )}
+        {showRoute && !showRouteComparison && routeWaypoints.eco && [
+          <Polyline
+            key="eco-shadow"
+            positions={routeWaypoints.eco}
+            pathOptions={{
+              color: '#000',
+              weight: 8,
+              opacity: 0.1,
+            }}
+          />,
+          <Polyline
+            key="eco-glow"
+            positions={routeWaypoints.eco}
+            pathOptions={{
+              color: '#22c55e',
+              weight: 12,
+              opacity: 0.2,
+            }}
+          />,
+          <Polyline
+            key="eco-line"
+            positions={routeWaypoints.eco}
+            pathOptions={{
+              color: '#22c55e',
+              weight: 4,
+              opacity: 1,
+            }}
+          />
+        ]}
 
         {/* Pickup marker */}
         {pickupPosition && (
