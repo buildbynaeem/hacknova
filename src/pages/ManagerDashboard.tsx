@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FleetMapSkeleton, StatsGridSkeleton, ChartSkeleton } from '@/components/dashboard/DashboardSkeletons';
 import SustainabilityCard from '@/components/dashboard/SustainabilityCard';
 import { PricingManagement } from '@/components/manager/PricingManagement';
+import { FleetManagement } from '@/components/manager/FleetManagement';
 
 const FleetMap = lazy(() => import('@/components/map/FleetMap'));
 
@@ -71,11 +72,20 @@ const ManagerDashboard: React.FC = () => {
           <SustainabilityCard />
         </motion.div>
 
-        {/* Pricing Management */}
+        {/* Fleet Management */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+        >
+          <FleetManagement />
+        </motion.div>
+
+        {/* Pricing Management */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
         >
           <PricingManagement />
         </motion.div>
