@@ -11,12 +11,14 @@ import {
   FileText,
   Search,
   Filter,
-  Eye
+  Eye,
+  Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import BookingDialog from '@/components/sender/BookingDialog';
 
 interface Shipment {
   id: string;
@@ -77,12 +79,31 @@ const mockShipments: Shipment[] = [
 const SenderDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [shipments, setShipments] = useState(mockShipments);
 
-  const filteredShipments = mockShipments.filter(
+  const filteredShipments = shipments.filter(
     (s) =>
       s.trackingId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.receiverName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleBookingComplete = (booking: any) => {
+    const newShipment: Shipment = {
+      id: String(shipments.length + 1),
+      trackingId: `BL-2024-00${1237 + shipments.length}`,
+      status: 'PENDING',
+      pickupAddress: `${booking.pickupAddress}, ${booking.pickupCity}`,
+      dropAddress: `${booking.dropAddress}, ${booking.dropCity}`,
+      senderName: booking.pickupContactName,
+      receiverName: booking.receiverName,
+      driverName: 'Pending Assignment',
+      vehicleNumber: '-',
+      estimatedTime: 'Awaiting Pickup',
+      createdAt: new Date().toISOString().split('T')[0],
+    };
+    setShipments([newShipment, ...shipments]);
+  };
 
   const getStatusBadge = (status: Shipment['status']) => {
     switch (status) {
@@ -115,6 +136,10 @@ const SenderDashboard: React.FC = () => {
                 </div>
               </div>
             </div>
+            <Button variant="accent" onClick={() => setBookingOpen(true)} className="gap-2">
+              <Plus className="w-4 h-4" />
+              New Shipment
+            </Button>
           </div>
         </div>
       </header>
@@ -265,6 +290,13 @@ const SenderDashboard: React.FC = () => {
           </Card>
         </div>
       </main>
+
+      {/* Booking Dialog */}
+      <BookingDialog
+        open={bookingOpen}
+        onOpenChange={setBookingOpen}
+        onBookingComplete={handleBookingComplete}
+      />
     </div>
   );
 };
