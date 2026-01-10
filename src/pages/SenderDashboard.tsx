@@ -1,28 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Package, 
   Truck, 
-  MapPin, 
-  Phone, 
   Clock, 
-  FileText,
   Search,
   Filter,
-  Eye,
   Plus,
   Loader2,
-  LogOut
+  LogOut,
+  Radio
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import BookingDialog from '@/components/sender/BookingDialog';
+import LiveTrackingPanel from '@/components/sender/LiveTrackingPanel';
 import { useAuth } from '@/hooks/useAuth';
-import { getUserShipments, createShipment, type CreateShipmentData } from '@/lib/shipment-service';
+import { useRealtimeShipments } from '@/hooks/useRealtimeShipments';
+import { createShipment, type CreateShipmentData } from '@/lib/shipment-service';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -32,29 +31,24 @@ const SenderDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, signOut, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+  const [selectedShipmentId, setSelectedShipmentId] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
-  const [shipments, setShipments] = useState<Shipment[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      loadShipments();
-    } else if (!authLoading && !isAuthenticated) {
-      setLoading(false);
-    }
-  }, [authLoading, isAuthenticated]);
+  // Real-time shipments with live updates
+  const handleLocationUpdate = useCallback((shipmentId: string, lat: number, lng: number) => {
+    console.log(`📍 Live location update for ${shipmentId}: ${lat}, ${lng}`);
+  }, []);
 
-  const loadShipments = async () => {
-    setLoading(true);
-    const { data, error } = await getUserShipments();
-    if (error) {
-      toast.error('Failed to load shipments');
-    } else {
-      setShipments(data);
-    }
-    setLoading(false);
-  };
+  const handleStatusChange = useCallback((shipment: Shipment) => {
+    toast.info(`Shipment ${shipment.tracking_id} status: ${shipment.status}`, {
+      icon: <Radio className="w-4 h-4 text-accent" />,
+    });
+  }, []);
+
+  const { shipments, loading, refetch } = useRealtimeShipments({
+    onLocationUpdate: handleLocationUpdate,
+    onStatusChange: handleStatusChange,
+  });
 
   const filteredShipments = shipments.filter(
     (s) =>
@@ -103,7 +97,7 @@ const SenderDashboard: React.FC = () => {
     if (error) {
       toast.error(`Failed to create shipment: ${error}`);
     } else if (newShipment) {
-      setShipments([newShipment, ...shipments]);
+      refetch(); // Refresh the shipments list
       toast.success('Shipment created successfully!');
     }
   };
@@ -254,9 +248,9 @@ const SenderDashboard: React.FC = () => {
                 >
                   <Card 
                     className={`cursor-pointer hover:shadow-md transition-all ${
-                      selectedShipment?.id === shipment.id ? 'ring-2 ring-accent' : ''
+                      selectedShipmentId === shipment.id ? 'ring-2 ring-accent' : ''
                     }`}
-                    onClick={() => setSelectedShipment(shipment)}
+                    onClick={() => setSelectedShipmentId(shipment.id)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
@@ -308,87 +302,7 @@ const SenderDashboard: React.FC = () => {
 
         {/* Live Tracking Panel */}
         <div className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Eye className="w-5 h-5 text-accent" />
-                Live Tracking
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedShipment ? (
-                <div className="space-y-4">
-                  {/* Map placeholder */}
-                  <div className="map-container h-48 relative rounded-lg">
-                    <div className="absolute inset-0 bg-secondary/50 flex items-center justify-center">
-                      <div className="text-center">
-                        <MapPin className="w-8 h-8 mx-auto text-accent mb-2" />
-                        <p className="text-sm text-muted-foreground">Live map view</p>
-                      </div>
-                    </div>
-                    {selectedShipment.status === 'IN_TRANSIT' && (
-                      <motion.div 
-                        className="absolute left-1/4 top-1/2 -translate-y-1/2"
-                        animate={{ x: [0, 20, 0] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                      >
-                        <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center shadow-lg">
-                          <Truck className="w-5 h-5 text-accent-foreground" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Shipment Details */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Status</span>
-                      {getStatusBadge(selectedShipment.status)}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Tracking ID</span>
-                      <span className="font-mono text-sm">{selectedShipment.tracking_id}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Receiver</span>
-                      <span className="font-medium">{selectedShipment.receiver_name}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Estimated Cost</span>
-                      <span className="font-medium">₹{selectedShipment.estimated_cost ?? '-'}</span>
-                    </div>
-                    {selectedShipment.carbon_score && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Carbon Saved</span>
-                        <span className="font-medium text-success">
-                          {selectedShipment.carbon_score.toFixed(2)} kg CO₂
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-2">
-                    <Button variant="outline" className="flex-1 gap-2" size="sm">
-                      <Phone className="w-4 h-4" />
-                      Contact
-                    </Button>
-                    {selectedShipment.status === 'DELIVERED' && (
-                      <Button variant="accent" className="flex-1 gap-2" size="sm">
-                        <FileText className="w-4 h-4" />
-                        Invoice
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Package className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">Select a shipment to track</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <LiveTrackingPanel selectedShipmentId={selectedShipmentId} />
         </div>
       </main>
 
