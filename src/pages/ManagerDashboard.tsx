@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BarChart3, Truck } from 'lucide-react';
+import { ArrowLeft, BarChart3, Truck, Map } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SustainabilityCard from '@/components/dashboard/SustainabilityCard';
+import FleetMap from '@/components/map/FleetMap';
 
 const ManagerDashboard: React.FC = () => {
   return (
@@ -36,10 +38,30 @@ const ManagerDashboard: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto p-4 md:p-6">
+      <main className="container mx-auto p-4 md:p-6 space-y-6">
+        {/* Fleet Map */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Map className="w-5 h-5 text-accent" />
+                Live Fleet Tracking
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FleetMap className="h-[400px]" />
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Sustainability Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
         >
           <SustainabilityCard />
         </motion.div>
