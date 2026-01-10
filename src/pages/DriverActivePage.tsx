@@ -1,13 +1,14 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Truck, Wifi, WifiOff } from 'lucide-react';
+import { ArrowLeft, Truck, Wifi, WifiOff, Power, MapPin, Clock, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDriverStore } from '@/store/driverStore';
 import ActiveDeliveryCard from '@/components/driver/ActiveDeliveryCard';
 
 const DriverActivePage: React.FC = () => {
-  const { isOnline, setOnline, totalDeliveries, totalCarbonSaved } = useDriverStore();
+  const { isOnline, setOnline, totalDeliveries, totalCarbonSaved, currentShipment } = useDriverStore();
 
   return (
     <div className="min-h-screen bg-background">
@@ -18,26 +19,19 @@ const DriverActivePage: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Back</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={isOnline ? 'success' : 'secondary'}
-              size="sm"
-              onClick={() => setOnline(!isOnline)}
-              className="gap-2"
-            >
-              {isOnline ? (
-                <>
-                  <Wifi className="w-4 h-4" />
-                  Online
-                </>
-              ) : (
-                <>
-                  <WifiOff className="w-4 h-4" />
-                  Offline
-                </>
-              )}
-            </Button>
-          </div>
+          {isOnline && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setOnline(false)}
+                className="gap-2"
+              >
+                <WifiOff className="w-4 h-4" />
+                Go Offline
+              </Button>
+            </div>
+          )}
         </div>
 
         <motion.div
@@ -54,33 +48,139 @@ const DriverActivePage: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Quick Stats */}
-        <motion.div 
-          className="flex gap-6 mt-6"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <div>
-            <p className="text-2xl font-bold">{totalDeliveries}</p>
-            <p className="text-xs text-primary-foreground/70">Deliveries</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold">{totalCarbonSaved.toFixed(1)} kg</p>
-            <p className="text-xs text-primary-foreground/70">CO₂ Saved</p>
-          </div>
-        </motion.div>
+        {/* Quick Stats - Only show when online */}
+        {isOnline && (
+          <motion.div 
+            className="flex gap-6 mt-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div>
+              <p className="text-2xl font-bold">{totalDeliveries}</p>
+              <p className="text-xs text-primary-foreground/70">Deliveries</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{totalCarbonSaved.toFixed(1)} kg</p>
+              <p className="text-xs text-primary-foreground/70">CO₂ Saved</p>
+            </div>
+          </motion.div>
+        )}
       </header>
 
       {/* Main Content */}
       <main className="p-4 -mt-2">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <ActiveDeliveryCard />
-        </motion.div>
+        <AnimatePresence mode="wait">
+          {!isOnline ? (
+            /* Offline State - Go Online Form */
+            <motion.div
+              key="offline"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Card className="border-2 border-dashed border-muted-foreground/20">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                    <WifiOff className="w-10 h-10 text-muted-foreground" />
+                  </div>
+                  <CardTitle className="text-xl">You're Currently Offline</CardTitle>
+                  <p className="text-muted-foreground text-sm mt-2">
+                    Go online to start receiving delivery tasks
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Info Cards */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="text-center p-3 bg-muted/50 rounded-lg">
+                      <Package className="w-5 h-5 mx-auto mb-1 text-primary" />
+                      <p className="text-xs text-muted-foreground">Pending Tasks</p>
+                      <p className="font-semibold">3</p>
+                    </div>
+                    <div className="text-center p-3 bg-muted/50 rounded-lg">
+                      <MapPin className="w-5 h-5 mx-auto mb-1 text-primary" />
+                      <p className="text-xs text-muted-foreground">Nearby</p>
+                      <p className="font-semibold">5 km</p>
+                    </div>
+                    <div className="text-center p-3 bg-muted/50 rounded-lg">
+                      <Clock className="w-5 h-5 mx-auto mb-1 text-primary" />
+                      <p className="text-xs text-muted-foreground">Avg. Time</p>
+                      <p className="font-semibold">25 min</p>
+                    </div>
+                  </div>
+
+                  {/* Go Online Button */}
+                  <Button
+                    onClick={() => setOnline(true)}
+                    size="lg"
+                    className="w-full gap-3 h-14 text-lg bg-gradient-hero hover:opacity-90"
+                  >
+                    <Power className="w-6 h-6" />
+                    Go Online
+                  </Button>
+
+                  <p className="text-xs text-center text-muted-foreground">
+                    By going online, you agree to accept and complete assigned deliveries
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Stats Summary */}
+              <Card className="mt-4">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Your Stats</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-2xl font-bold">{totalDeliveries}</p>
+                      <p className="text-xs text-muted-foreground">Total Deliveries</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-green-600">{totalCarbonSaved.toFixed(1)} kg</p>
+                      <p className="text-xs text-muted-foreground">CO₂ Saved</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ) : (
+            /* Online State - Show Active Delivery or Waiting */
+            <motion.div
+              key="online"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ delay: 0.1 }}
+            >
+              {currentShipment ? (
+                <ActiveDeliveryCard />
+              ) : (
+                /* Waiting for Task Assignment */
+                <Card className="border-2 border-dashed border-primary/20">
+                  <CardContent className="py-12 text-center">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center"
+                    >
+                      <Wifi className="w-8 h-8 text-primary" />
+                    </motion.div>
+                    <h3 className="text-lg font-semibold mb-2">You're Online</h3>
+                    <p className="text-muted-foreground text-sm mb-4">
+                      Waiting for task assignment...
+                    </p>
+                    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      Actively searching for nearby deliveries
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
