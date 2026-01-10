@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      fleet_vehicles: {
+        Row: {
+          created_at: string
+          current_driver_id: string | null
+          fuel_type: string | null
+          id: string
+          is_active: boolean
+          last_maintenance_date: string | null
+          make: string | null
+          model: string | null
+          next_maintenance_date: string | null
+          total_km_driven: number | null
+          updated_at: string
+          vehicle_number: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+          year: number | null
+        }
+        Insert: {
+          created_at?: string
+          current_driver_id?: string | null
+          fuel_type?: string | null
+          id?: string
+          is_active?: boolean
+          last_maintenance_date?: string | null
+          make?: string | null
+          model?: string | null
+          next_maintenance_date?: string | null
+          total_km_driven?: number | null
+          updated_at?: string
+          vehicle_number: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+          year?: number | null
+        }
+        Update: {
+          created_at?: string
+          current_driver_id?: string | null
+          fuel_type?: string | null
+          id?: string
+          is_active?: boolean
+          last_maintenance_date?: string | null
+          make?: string | null
+          model?: string | null
+          next_maintenance_date?: string | null
+          total_km_driven?: number | null
+          updated_at?: string
+          vehicle_number?: string
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
+          year?: number | null
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
