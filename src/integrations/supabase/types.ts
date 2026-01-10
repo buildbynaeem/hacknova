@@ -71,6 +71,45 @@ export type Database = {
           },
         ]
       }
+      pricing_config: {
+        Row: {
+          base_fare: number
+          cost_per_km: number
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          effective_to: string | null
+          id: string
+          is_active: boolean
+          updated_at: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Insert: {
+          base_fare?: number
+          cost_per_km: number
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Update: {
+          base_fare?: number
+          cost_per_km?: number
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -141,6 +180,7 @@ export type Database = {
           status: Database["public"]["Enums"]["shipment_status"]
           tracking_id: string
           updated_at: string
+          vehicle_type: Database["public"]["Enums"]["vehicle_type"] | null
           weight: number | null
         }
         Insert: {
@@ -182,6 +222,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["shipment_status"]
           tracking_id: string
           updated_at?: string
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"] | null
           weight?: number | null
         }
         Update: {
@@ -223,6 +264,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["shipment_status"]
           tracking_id?: string
           updated_at?: string
+          vehicle_type?: Database["public"]["Enums"]["vehicle_type"] | null
           weight?: number | null
         }
         Relationships: []
@@ -398,6 +440,12 @@ export type Database = {
         | "IN_TRANSIT"
         | "DELIVERED"
         | "CANCELLED"
+      vehicle_type:
+        | "BIKE"
+        | "THREE_WHEELER"
+        | "MINI_TRUCK"
+        | "TRUCK"
+        | "LARGE_TRUCK"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -534,6 +582,13 @@ export const Constants = {
         "IN_TRANSIT",
         "DELIVERED",
         "CANCELLED",
+      ],
+      vehicle_type: [
+        "BIKE",
+        "THREE_WHEELER",
+        "MINI_TRUCK",
+        "TRUCK",
+        "LARGE_TRUCK",
       ],
     },
   },

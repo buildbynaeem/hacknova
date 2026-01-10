@@ -1,10 +1,11 @@
 import React, { Suspense, lazy } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BarChart3, Truck, Map } from 'lucide-react';
+import { ArrowLeft, BarChart3, Truck, Map, IndianRupee } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FleetMapSkeleton, StatsGridSkeleton, ChartSkeleton } from '@/components/dashboard/DashboardSkeletons';
 import SustainabilityCard from '@/components/dashboard/SustainabilityCard';
+import { PricingManagement } from '@/components/manager/PricingManagement';
 
 const FleetMap = lazy(() => import('@/components/map/FleetMap'));
 
@@ -68,6 +69,15 @@ const ManagerDashboard: React.FC = () => {
           transition={{ delay: 0.1 }}
         >
           <SustainabilityCard />
+        </motion.div>
+
+        {/* Pricing Management */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <PricingManagement />
         </motion.div>
       </main>
     </div>
