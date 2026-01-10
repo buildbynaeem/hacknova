@@ -81,6 +81,8 @@ export type Database = {
           effective_to: string | null
           id: string
           is_active: boolean
+          max_weight: number
+          min_weight: number
           updated_at: string
           vehicle_type: Database["public"]["Enums"]["vehicle_type"]
         }
@@ -93,6 +95,8 @@ export type Database = {
           effective_to?: string | null
           id?: string
           is_active?: boolean
+          max_weight?: number
+          min_weight?: number
           updated_at?: string
           vehicle_type: Database["public"]["Enums"]["vehicle_type"]
         }
@@ -105,6 +109,8 @@ export type Database = {
           effective_to?: string | null
           id?: string
           is_active?: boolean
+          max_weight?: number
+          min_weight?: number
           updated_at?: string
           vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
         }
