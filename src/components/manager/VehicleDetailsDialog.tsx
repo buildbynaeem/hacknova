@@ -194,13 +194,16 @@ export function VehicleDetailsDialog({ vehicle, open, onOpenChange }: VehicleDet
                         <SelectValue placeholder="Choose a driver..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {availableDrivers?.map((driver) => (
-                          <SelectItem key={driver.user_id} value={driver.user_id}>
-                            {driver.full_name || 'Unnamed'} {driver.phone ? `(${driver.phone})` : ''}
-                          </SelectItem>
-                        ))}
-                        {(!availableDrivers || availableDrivers.length === 0) && (
-                          <SelectItem value="" disabled>No drivers available</SelectItem>
+                        {availableDrivers && availableDrivers.length > 0 ? (
+                          availableDrivers.map((driver) => (
+                            <SelectItem key={driver.user_id} value={driver.user_id}>
+                              {driver.full_name || 'Unnamed'} {driver.phone ? `(${driver.phone})` : ''}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <div className="p-2 text-sm text-muted-foreground text-center">
+                            No drivers available. Add drivers first.
+                          </div>
                         )}
                       </SelectContent>
                     </Select>
