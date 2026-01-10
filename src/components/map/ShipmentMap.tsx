@@ -3,7 +3,8 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getDistance } from 'geolib';
-import { Leaf, Clock, Route, Zap } from 'lucide-react';
+import { Leaf, Clock, Route, Zap, DollarSign, TrendingDown, CheckCircle2, Car } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Fix for default marker icons in Leaflet with bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -39,7 +40,6 @@ const createCustomIcon = (color: string, emoji: string) => {
   });
 };
 
-const driverIcon = createCustomIcon('#f97316', '🚚');
 const pickupIcon = createCustomIcon('#22c55e', '📦');
 const deliveryIcon = createCustomIcon('#3b82f6', '📍');
 
@@ -48,11 +48,17 @@ interface MapPosition {
   lng: number;
 }
 
-interface RouteInfo {
-  distance: number; // in km
-  duration: number; // in minutes
-  carbonSaved: number; // in kg CO2
+interface RouteOption {
+  id: 'eco' | 'standard' | 'fast';
+  name: string;
+  distance: number;
+  duration: number;
+  cost: number;
+  carbonEmission: number;
+  carbonSaved: number;
+  color: string;
   isEcoFriendly: boolean;
+  description: string;
 }
 
 interface ShipmentMapProps {
@@ -61,11 +67,13 @@ interface ShipmentMapProps {
   deliveryPosition?: MapPosition | null;
   showRoute?: boolean;
   showRouteOptimization?: boolean;
+  showRouteComparison?: boolean;
   driverName?: string;
   pickupAddress?: string;
   deliveryAddress?: string;
   className?: string;
   isLive?: boolean;
+  onRouteSelect?: (routeId: 'eco' | 'standard' | 'fast') => void;
 }
 
 // Component to handle map view updates
@@ -86,19 +94,21 @@ function MapUpdater({ positions }: { positions: MapPosition[] }) {
 function generateOptimizedRoute(
   start: MapPosition,
   end: MapPosition,
-  isEcoFriendly: boolean
+  routeType: 'eco' | 'standard' | 'fast'
 ): [number, number][] {
   const waypoints: [number, number][] = [];
-  const steps = isEcoFriendly ? 8 : 5; // Eco route has more waypoints for smoother path
   
-  // Add slight curve to make it look like a real route
-  const midLat = (start.lat + end.lat) / 2;
-  const midLng = (start.lng + end.lng) / 2;
+  // Different route characteristics
+  const config = {
+    eco: { steps: 10, offsetFactor: 0.18, jitter: 0.0008 },
+    standard: { steps: 6, offsetFactor: 0.08, jitter: 0.0015 },
+    fast: { steps: 4, offsetFactor: -0.05, jitter: 0.001 },
+  };
   
-  // Calculate perpendicular offset for curve
+  const { steps, offsetFactor, jitter } = config[routeType];
+  
   const dx = end.lng - start.lng;
   const dy = end.lat - start.lat;
-  const offsetFactor = isEcoFriendly ? 0.15 : 0.08;
   const perpLat = -dx * offsetFactor;
   const perpLng = dy * offsetFactor;
 
@@ -106,13 +116,10 @@ function generateOptimizedRoute(
   
   for (let i = 1; i < steps; i++) {
     const t = i / steps;
-    // Bezier curve interpolation
-    const curve = Math.sin(t * Math.PI) * (isEcoFriendly ? 0.8 : 0.5);
+    const curve = Math.sin(t * Math.PI) * 0.7;
     const lat = start.lat + (end.lat - start.lat) * t + perpLat * curve;
     const lng = start.lng + (end.lng - start.lng) * t + perpLng * curve;
     
-    // Add slight randomness for realism
-    const jitter = isEcoFriendly ? 0.001 : 0.002;
     waypoints.push([
       lat + (Math.random() - 0.5) * jitter,
       lng + (Math.random() - 0.5) * jitter
@@ -124,43 +131,70 @@ function generateOptimizedRoute(
   return waypoints;
 }
 
-// Calculate route info
-function calculateRouteInfo(
+// Calculate route options
+function calculateRouteOptions(
   pickup: MapPosition,
   delivery: MapPosition,
   driver?: MapPosition | null
-): RouteInfo {
-  // Calculate direct distance
+): RouteOption[] {
   const directDistance = getDistance(
     { latitude: pickup.lat, longitude: pickup.lng },
     { latitude: delivery.lat, longitude: delivery.lng }
-  ) / 1000; // Convert to km
+  ) / 1000;
 
-  // Add driver to pickup if available
-  let totalDistance = directDistance;
+  let baseDistance = directDistance;
   if (driver) {
     const driverToPickup = getDistance(
       { latitude: driver.lat, longitude: driver.lng },
       { latitude: pickup.lat, longitude: pickup.lng }
     ) / 1000;
-    totalDistance += driverToPickup;
+    baseDistance += driverToPickup;
   }
 
-  // Estimate duration (avg speed 30 km/h in city)
-  const duration = Math.round(totalDistance / 30 * 60);
+  // Base carbon emission per km (kg CO2)
+  const baseEmission = 0.21;
+  
+  // Route configurations with realistic variations
+  const routes: RouteOption[] = [
+    {
+      id: 'eco',
+      name: 'Eco-Friendly',
+      distance: Math.round((baseDistance * 1.12) * 10) / 10, // 12% longer
+      duration: Math.round((baseDistance * 1.12) / 25 * 60), // 25 km/h avg
+      cost: Math.round(baseDistance * 8 * 0.9), // 10% cheaper
+      carbonEmission: Math.round(baseDistance * 1.12 * baseEmission * 0.7 * 100) / 100, // 30% less emissions
+      carbonSaved: Math.round(baseDistance * baseEmission * 0.3 * 100) / 100,
+      color: '#22c55e',
+      isEcoFriendly: true,
+      description: 'Optimized for lowest emissions',
+    },
+    {
+      id: 'standard',
+      name: 'Standard',
+      distance: Math.round(baseDistance * 10) / 10,
+      duration: Math.round(baseDistance / 30 * 60), // 30 km/h avg
+      cost: Math.round(baseDistance * 8),
+      carbonEmission: Math.round(baseDistance * baseEmission * 100) / 100,
+      carbonSaved: 0,
+      color: '#3b82f6',
+      isEcoFriendly: false,
+      description: 'Balanced time and cost',
+    },
+    {
+      id: 'fast',
+      name: 'Express',
+      distance: Math.round((baseDistance * 0.95) * 10) / 10, // 5% shorter
+      duration: Math.round((baseDistance * 0.95) / 40 * 60), // 40 km/h avg
+      cost: Math.round(baseDistance * 8 * 1.25), // 25% more expensive
+      carbonEmission: Math.round(baseDistance * 0.95 * baseEmission * 1.15 * 100) / 100, // 15% more emissions
+      carbonSaved: -Math.round(baseDistance * baseEmission * 0.15 * 100) / 100,
+      color: '#f97316',
+      isEcoFriendly: false,
+      description: 'Fastest delivery time',
+    },
+  ];
 
-  // Calculate carbon saved (eco-friendly routes save ~15% CO2)
-  // Average car emits 0.21 kg CO2 per km
-  const standardCarbon = totalDistance * 0.21;
-  const ecoCarbon = standardCarbon * 0.85;
-  const carbonSaved = standardCarbon - ecoCarbon;
-
-  return {
-    distance: Math.round(totalDistance * 10) / 10,
-    duration,
-    carbonSaved: Math.round(carbonSaved * 100) / 100,
-    isEcoFriendly: true,
-  };
+  return routes;
 }
 
 // Animated driver marker component
@@ -232,8 +266,118 @@ function AnimatedDriverMarker({
   );
 }
 
-// Route optimization info panel
-function RouteOptimizationPanel({ routeInfo }: { routeInfo: RouteInfo }) {
+// Route comparison panel
+function RouteComparisonPanel({ 
+  routes, 
+  selectedRoute, 
+  onSelectRoute 
+}: { 
+  routes: RouteOption[];
+  selectedRoute: 'eco' | 'standard' | 'fast';
+  onSelectRoute: (id: 'eco' | 'standard' | 'fast') => void;
+}) {
+  return (
+    <div className="absolute bottom-3 left-3 right-3 bg-card/95 backdrop-blur-sm rounded-xl shadow-lg z-[1000] border border-border overflow-hidden">
+      <div className="px-3 py-2 border-b border-border bg-muted/50">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Route className="h-4 w-4 text-accent" />
+          Route Options
+        </h3>
+      </div>
+      
+      <div className="grid grid-cols-3 divide-x divide-border">
+        {routes.map((route) => (
+          <button
+            key={route.id}
+            onClick={() => onSelectRoute(route.id)}
+            className={cn(
+              "p-3 text-left transition-all hover:bg-muted/50 relative",
+              selectedRoute === route.id && "bg-muted"
+            )}
+          >
+            {/* Selection indicator */}
+            {selectedRoute === route.id && (
+              <div 
+                className="absolute top-0 left-0 right-0 h-0.5" 
+                style={{ backgroundColor: route.color }}
+              />
+            )}
+            
+            {/* Header */}
+            <div className="flex items-center gap-1.5 mb-2">
+              <div 
+                className="w-2.5 h-2.5 rounded-full" 
+                style={{ backgroundColor: route.color }}
+              />
+              <span className="text-xs font-semibold text-foreground">{route.name}</span>
+              {route.isEcoFriendly && (
+                <Leaf className="h-3 w-3 text-success ml-auto" />
+              )}
+              {route.id === 'fast' && (
+                <Zap className="h-3 w-3 text-warning ml-auto" />
+              )}
+              {selectedRoute === route.id && (
+                <CheckCircle2 className="h-3.5 w-3.5 text-accent ml-auto" />
+              )}
+            </div>
+            
+            {/* Stats */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <Route className="h-3 w-3" />
+                  {route.distance} km
+                </span>
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {route.duration} min
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium text-foreground flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" />
+                  ₹{route.cost}
+                </span>
+                <span 
+                  className={cn(
+                    "flex items-center gap-1",
+                    route.carbonSaved > 0 ? "text-success" : route.carbonSaved < 0 ? "text-destructive" : "text-muted-foreground"
+                  )}
+                >
+                  {route.carbonSaved > 0 ? (
+                    <>
+                      <TrendingDown className="h-3 w-3" />
+                      -{route.carbonSaved} kg
+                    </>
+                  ) : route.carbonSaved < 0 ? (
+                    <>
+                      <Car className="h-3 w-3" />
+                      +{Math.abs(route.carbonSaved)} kg
+                    </>
+                  ) : (
+                    <>
+                      <Leaf className="h-3 w-3" />
+                      {route.carbonEmission} kg
+                    </>
+                  )}
+                </span>
+              </div>
+            </div>
+            
+            {/* Description */}
+            <p className="text-[10px] text-muted-foreground mt-2 leading-tight">
+              {route.description}
+            </p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Simple route info panel (when comparison is disabled)
+function RouteOptimizationPanel({ route }: { route: RouteOption }) {
   return (
     <div className="absolute bottom-3 left-3 right-3 bg-card/95 backdrop-blur-sm rounded-xl p-3 shadow-lg z-[1000] border border-border">
       <div className="flex items-center gap-2 mb-2">
@@ -246,28 +390,36 @@ function RouteOptimizationPanel({ routeInfo }: { routeInfo: RouteInfo }) {
         </span>
       </div>
       
-      <div className="grid grid-cols-3 gap-3">
-        <div className="flex items-center gap-2">
+      <div className="grid grid-cols-4 gap-2">
+        <div className="flex items-center gap-1.5">
           <Route className="h-3.5 w-3.5 text-muted-foreground" />
           <div>
-            <p className="text-xs text-muted-foreground">Distance</p>
-            <p className="text-sm font-semibold text-foreground">{routeInfo.distance} km</p>
+            <p className="text-[10px] text-muted-foreground">Distance</p>
+            <p className="text-xs font-semibold text-foreground">{route.distance} km</p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5 text-muted-foreground" />
           <div>
-            <p className="text-xs text-muted-foreground">ETA</p>
-            <p className="text-sm font-semibold text-foreground">{routeInfo.duration} min</p>
+            <p className="text-[10px] text-muted-foreground">ETA</p>
+            <p className="text-xs font-semibold text-foreground">{route.duration} min</p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+          <div>
+            <p className="text-[10px] text-muted-foreground">Cost</p>
+            <p className="text-xs font-semibold text-foreground">₹{route.cost}</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-1.5">
           <Zap className="h-3.5 w-3.5 text-success" />
           <div>
-            <p className="text-xs text-muted-foreground">CO₂ Saved</p>
-            <p className="text-sm font-semibold text-success">{routeInfo.carbonSaved} kg</p>
+            <p className="text-[10px] text-muted-foreground">CO₂ Saved</p>
+            <p className="text-xs font-semibold text-success">{route.carbonSaved} kg</p>
           </div>
         </div>
       </div>
@@ -281,13 +433,16 @@ const ShipmentMap: React.FC<ShipmentMapProps> = ({
   deliveryPosition,
   showRoute = true,
   showRouteOptimization = true,
+  showRouteComparison = false,
   driverName,
   pickupAddress,
   deliveryAddress,
   className = '',
   isLive = false,
+  onRouteSelect,
 }) => {
-  // Default to Mumbai area if no positions provided
+  const [selectedRoute, setSelectedRoute] = useState<'eco' | 'standard' | 'fast'>('eco');
+  
   const defaultCenter: MapPosition = { lat: 19.076, lng: 72.8777 };
   
   const allPositions = useMemo(() => {
@@ -309,23 +464,34 @@ const ShipmentMap: React.FC<ShipmentMapProps> = ({
     return defaultCenter;
   }, [driverPosition, allPositions]);
 
-  // Generate optimized route waypoints
-  const optimizedRoute = useMemo(() => {
-    if (!pickupPosition || !deliveryPosition) return null;
-    return generateOptimizedRoute(pickupPosition, deliveryPosition, true);
+  // Calculate all route options
+  const routeOptions = useMemo(() => {
+    if (!pickupPosition || !deliveryPosition) return [];
+    return calculateRouteOptions(pickupPosition, deliveryPosition, driverPosition);
+  }, [pickupPosition, deliveryPosition, driverPosition]);
+
+  // Generate route waypoints for each option
+  const routeWaypoints = useMemo(() => {
+    if (!pickupPosition || !deliveryPosition) return {};
+    return {
+      eco: generateOptimizedRoute(pickupPosition, deliveryPosition, 'eco'),
+      standard: generateOptimizedRoute(pickupPosition, deliveryPosition, 'standard'),
+      fast: generateOptimizedRoute(pickupPosition, deliveryPosition, 'fast'),
+    };
   }, [pickupPosition, deliveryPosition]);
 
   // Driver to pickup route
   const driverToPickupRoute = useMemo(() => {
     if (!driverPosition || !pickupPosition) return null;
-    return generateOptimizedRoute(driverPosition, pickupPosition, true);
+    return generateOptimizedRoute(driverPosition, pickupPosition, 'standard');
   }, [driverPosition, pickupPosition]);
 
-  // Calculate route info
-  const routeInfo = useMemo(() => {
-    if (!pickupPosition || !deliveryPosition) return null;
-    return calculateRouteInfo(pickupPosition, deliveryPosition, driverPosition);
-  }, [pickupPosition, deliveryPosition, driverPosition]);
+  const handleRouteSelect = (routeId: 'eco' | 'standard' | 'fast') => {
+    setSelectedRoute(routeId);
+    onRouteSelect?.(routeId);
+  };
+
+  const selectedRouteOption = routeOptions.find(r => r.id === selectedRoute);
 
   return (
     <div className={`relative rounded-lg overflow-hidden ${className}`}>
@@ -365,44 +531,86 @@ const ShipmentMap: React.FC<ShipmentMapProps> = ({
           </>
         )}
 
-        {/* Pickup to Delivery route (solid green for eco-friendly) */}
-        {showRoute && optimizedRoute && (
+        {/* Route comparison mode - show all routes */}
+        {showRoute && showRouteComparison && pickupPosition && deliveryPosition && (
           <>
-            {/* Shadow */}
+            {/* Non-selected routes (faded) */}
+            {(['eco', 'standard', 'fast'] as const).filter(id => id !== selectedRoute).map((routeId) => {
+              const route = routeOptions.find(r => r.id === routeId);
+              const waypoints = routeWaypoints[routeId];
+              if (!route || !waypoints) return null;
+              
+              return (
+                <Polyline
+                  key={routeId}
+                  positions={waypoints}
+                  pathOptions={{
+                    color: route.color,
+                    weight: 3,
+                    opacity: 0.3,
+                    dashArray: '5, 10',
+                  }}
+                />
+              );
+            })}
+            
+            {/* Selected route (highlighted) */}
+            {selectedRouteOption && routeWaypoints[selectedRoute] && (
+              <>
+                <Polyline
+                  positions={routeWaypoints[selectedRoute]}
+                  pathOptions={{
+                    color: '#000',
+                    weight: 8,
+                    opacity: 0.1,
+                  }}
+                />
+                <Polyline
+                  positions={routeWaypoints[selectedRoute]}
+                  pathOptions={{
+                    color: selectedRouteOption.color,
+                    weight: 10,
+                    opacity: 0.25,
+                  }}
+                />
+                <Polyline
+                  positions={routeWaypoints[selectedRoute]}
+                  pathOptions={{
+                    color: selectedRouteOption.color,
+                    weight: 4,
+                    opacity: 1,
+                  }}
+                />
+              </>
+            )}
+          </>
+        )}
+
+        {/* Single route mode (eco by default) */}
+        {showRoute && !showRouteComparison && routeWaypoints.eco && (
+          <>
             <Polyline
-              positions={optimizedRoute}
+              positions={routeWaypoints.eco}
               pathOptions={{
                 color: '#000',
                 weight: 8,
                 opacity: 0.1,
               }}
             />
-            {/* Glow effect for eco route */}
             <Polyline
-              positions={optimizedRoute}
+              positions={routeWaypoints.eco}
               pathOptions={{
                 color: '#22c55e',
                 weight: 12,
                 opacity: 0.2,
               }}
             />
-            {/* Main route */}
             <Polyline
-              positions={optimizedRoute}
+              positions={routeWaypoints.eco}
               pathOptions={{
                 color: '#22c55e',
                 weight: 4,
                 opacity: 1,
-              }}
-            />
-            {/* Direction arrows overlay */}
-            <Polyline
-              positions={optimizedRoute}
-              pathOptions={{
-                color: '#16a34a',
-                weight: 2,
-                opacity: 0.7,
-                dashArray: '1, 15',
               }}
             />
           </>
@@ -457,9 +665,17 @@ const ShipmentMap: React.FC<ShipmentMapProps> = ({
         </div>
       )}
 
-      {/* Route optimization panel */}
-      {showRouteOptimization && routeInfo && pickupPosition && deliveryPosition && (
-        <RouteOptimizationPanel routeInfo={routeInfo} />
+      {/* Route panels */}
+      {showRouteOptimization && pickupPosition && deliveryPosition && routeOptions.length > 0 && (
+        showRouteComparison ? (
+          <RouteComparisonPanel
+            routes={routeOptions}
+            selectedRoute={selectedRoute}
+            onSelectRoute={handleRouteSelect}
+          />
+        ) : (
+          routeOptions[0] && <RouteOptimizationPanel route={routeOptions[0]} />
+        )
       )}
     </div>
   );
