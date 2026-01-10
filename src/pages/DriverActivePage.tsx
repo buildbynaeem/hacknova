@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Truck, Wifi, WifiOff, Power, MapPin, Clock, Package, Route, Fuel, TrendingDown, User } from 'lucide-react';
+import { ArrowLeft, Wifi, WifiOff, Power, MapPin, Clock, Package, Route, Fuel, TrendingDown, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDriverStore } from '@/store/driverStore';
 import ActiveDeliveryCard from '@/components/driver/ActiveDeliveryCard';
 import DriverCheckInForm, { CheckInData } from '@/components/driver/DriverCheckInForm';
 import DriverCheckOutForm, { CheckOutSummary } from '@/components/driver/DriverCheckOutForm';
+import DriverNotifications from '@/components/driver/DriverNotifications';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,8 +79,9 @@ const DriverActivePage: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Back</span>
           </Link>
-          {isOnline && (
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <DriverNotifications />
+            {isOnline && (
               <Button
                 variant="destructive"
                 size="sm"
@@ -89,8 +91,8 @@ const DriverActivePage: React.FC = () => {
                 <WifiOff className="w-4 h-4" />
                 Go Offline
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <motion.div
