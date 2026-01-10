@@ -15,7 +15,10 @@ import {
   Clock,
   CreditCard,
   LocateFixed,
-  Loader2
+  Loader2,
+  Leaf,
+  Zap,
+  Route
 } from 'lucide-react';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { Button } from '@/components/ui/button';
@@ -68,6 +71,8 @@ interface BookingData {
   dimensions: string;
   description: string;
   isFragile: boolean;
+  // Route type
+  routeType: 'eco' | 'standard' | 'express';
 }
 
 const initialFormData: BookingData = {
@@ -88,13 +93,54 @@ const initialFormData: BookingData = {
   dimensions: '',
   description: '',
   isFragile: false,
+  routeType: 'standard',
 };
 
 const steps = [
-  { id: 1, title: 'Pickup Location', icon: MapPin },
-  { id: 2, title: 'Delivery Location', icon: Truck },
-  { id: 3, title: 'Package Details', icon: Package },
-  { id: 4, title: 'Review & Confirm', icon: Check },
+  { id: 1, title: 'Pickup', icon: MapPin },
+  { id: 2, title: 'Delivery', icon: Truck },
+  { id: 3, title: 'Package', icon: Package },
+  { id: 4, title: 'Route', icon: Route },
+  { id: 5, title: 'Confirm', icon: Check },
+];
+
+const routeTypes = [
+  { 
+    value: 'eco' as const, 
+    label: 'Eco-Friendly', 
+    icon: Leaf,
+    color: 'text-green-500',
+    bgColor: 'bg-green-500/10',
+    borderColor: 'border-green-500',
+    description: 'Lowest carbon footprint',
+    deliveryTime: '3-5 days',
+    priceModifier: 0.85,
+    co2Savings: '40% less CO₂'
+  },
+  { 
+    value: 'standard' as const, 
+    label: 'Standard', 
+    icon: Truck,
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-500/10',
+    borderColor: 'border-blue-500',
+    description: 'Balanced speed & cost',
+    deliveryTime: '24-48 hours',
+    priceModifier: 1,
+    co2Savings: 'Standard emissions'
+  },
+  { 
+    value: 'express' as const, 
+    label: 'Express', 
+    icon: Zap,
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500/10',
+    borderColor: 'border-orange-500',
+    description: 'Fastest delivery',
+    deliveryTime: '6-12 hours',
+    priceModifier: 1.5,
+    co2Savings: 'Priority routing'
+  },
 ];
 
 const timeSlots = [
@@ -172,6 +218,8 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
         );
       case 3:
         return !!(formData.packageType && formData.weight);
+      case 4:
+        return !!formData.routeType;
       default:
         return true;
     }
@@ -179,7 +227,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 4));
+      setCurrentStep((prev) => Math.min(prev + 1, 5));
     } else {
       toast.error('Please fill in all required fields');
     }
@@ -192,7 +240,9 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
-    const estimatedCost = Math.round(50 + (parseFloat(formData.weight) || 1) * 15);
+    const selectedRoute = routeTypes.find(r => r.value === formData.routeType) || routeTypes[1];
+    const baseCost = 50 + (parseFloat(formData.weight) || 1) * 15;
+    const estimatedCost = Math.round(baseCost * selectedRoute.priceModifier);
     const receiptId = `RTZ-${Date.now()}`;
     
     try {
@@ -203,6 +253,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
           pickupCity: formData.pickupCity,
           dropCity: formData.dropCity,
           packageType: formData.packageType,
+          routeType: formData.routeType,
         },
         prefill: {
           name: formData.pickupContactName,
@@ -556,13 +607,79 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
         );
 
       case 4:
-        const estimatedCost = Math.round(
-          50 + (parseFloat(formData.weight) || 1) * 15
-        );
-        
         return (
           <motion.div
             key="step4"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-4"
+          >
+            <div className="text-center mb-4">
+              <h3 className="font-semibold text-lg">Choose Delivery Type</h3>
+              <p className="text-sm text-muted-foreground">Select your preferred route based on speed and sustainability</p>
+            </div>
+            
+            <div className="grid gap-3">
+              {routeTypes.map((route) => {
+                const RouteIcon = route.icon;
+                const isSelected = formData.routeType === route.value;
+                const baseCost = 50 + (parseFloat(formData.weight) || 1) * 15;
+                const routeCost = Math.round(baseCost * route.priceModifier);
+                
+                return (
+                  <Card
+                    key={route.value}
+                    className={`cursor-pointer transition-all ${
+                      isSelected
+                        ? `ring-2 ${route.borderColor} ${route.bgColor}`
+                        : 'hover:bg-muted/50'
+                    }`}
+                    onClick={() => updateField('routeType', route.value)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full ${route.bgColor} flex items-center justify-center`}>
+                            <RouteIcon className={`w-5 h-5 ${route.color}`} />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">{route.label}</span>
+                              {route.value === 'eco' && (
+                                <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                                  {route.co2Savings}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{route.description}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`font-bold text-lg ${route.color}`}>₹{routeCost}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 justify-end">
+                            <Clock className="w-3 h-3" />
+                            {route.deliveryTime}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </motion.div>
+        );
+
+      case 5:
+        const selectedRoute = routeTypes.find(r => r.value === formData.routeType) || routeTypes[1];
+        const baseCostCalc = 50 + (parseFloat(formData.weight) || 1) * 15;
+        const estimatedCost = Math.round(baseCostCalc * selectedRoute.priceModifier);
+        const RouteIconSummary = selectedRoute.icon;
+        
+        return (
+          <motion.div
+            key="step5"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -649,19 +766,39 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
               </CardContent>
             </Card>
 
+            {/* Route Type Summary */}
+            <Card className={`${selectedRoute.bgColor} ${selectedRoute.borderColor} border`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full bg-background flex items-center justify-center`}>
+                      <RouteIconSummary className={`w-4 h-4 ${selectedRoute.color}`} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">{selectedRoute.label} Delivery</h4>
+                      <p className="text-sm text-muted-foreground">{selectedRoute.deliveryTime}</p>
+                    </div>
+                  </div>
+                  {selectedRoute.value === 'eco' && (
+                    <Badge className="bg-green-500 text-white">{selectedRoute.co2Savings}</Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Price Estimate */}
             <Card className="bg-gradient-to-r from-accent/10 to-success/10 border-accent/30">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Estimated Cost</p>
+                    <p className="text-sm text-muted-foreground">Total Cost</p>
                     <p className="text-2xl font-bold text-accent">₹{estimatedCost}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">Estimated Delivery</p>
                     <p className="flex items-center gap-1 font-semibold">
                       <Clock className="w-4 h-4" />
-                      24-48 hours
+                      {selectedRoute.deliveryTime}
                     </p>
                   </div>
                 </div>
@@ -744,7 +881,7 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
             Back
           </Button>
 
-          {currentStep < 4 ? (
+          {currentStep < 5 ? (
             <Button variant="accent" onClick={handleNext} className="gap-2">
               Next
               <ArrowRight className="w-4 h-4" />
