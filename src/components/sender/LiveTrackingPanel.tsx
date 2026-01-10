@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { TrackingPanelSkeleton } from '@/components/dashboard/DashboardSkeletons';
 import { useRealtimeShipment } from '@/hooks/useRealtimeShipments';
 import ShipmentMap from '@/components/map/ShipmentMap';
 import type { Database } from '@/integrations/supabase/types';
@@ -132,9 +133,8 @@ const LiveTrackingPanel: React.FC<LiveTrackingPanelProps> = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex items-center justify-center py-12"
             >
-              <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+              <TrackingPanelSkeleton />
             </motion.div>
           ) : shipment ? (
             <motion.div

@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, BarChart3, Truck, Map } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FleetMapSkeleton, StatsGridSkeleton, ChartSkeleton } from '@/components/dashboard/DashboardSkeletons';
 import SustainabilityCard from '@/components/dashboard/SustainabilityCard';
-import FleetMap from '@/components/map/FleetMap';
+
+const FleetMap = lazy(() => import('@/components/map/FleetMap'));
 
 const ManagerDashboard: React.FC = () => {
   return (
@@ -52,7 +54,9 @@ const ManagerDashboard: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <FleetMap className="h-[400px]" />
+              <Suspense fallback={<FleetMapSkeleton className="h-[400px]" />}>
+                <FleetMap className="h-[400px]" />
+              </Suspense>
             </CardContent>
           </Card>
         </motion.div>
