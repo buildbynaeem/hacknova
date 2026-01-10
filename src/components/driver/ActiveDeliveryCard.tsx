@@ -20,6 +20,7 @@ import { useDriverStore } from '@/store/driverStore';
 import { useDriverLocation } from '@/hooks/useDriverLocation';
 import { validatePickupOTP, validateDeliveryOTP, completeDelivery } from '@/lib/delivery-actions';
 import ShipmentMap from '@/components/map/ShipmentMap';
+import LiveEmissionTracker from '@/components/emissions/LiveEmissionTracker';
 import { toast } from 'sonner';
 
 type DeliveryState = 'pickup' | 'transit' | 'delivery' | 'completed';
@@ -287,6 +288,16 @@ const ActiveDeliveryCard: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Live Emission Tracker */}
+                <LiveEmissionTracker
+                  distanceTraveled={Math.max(0, currentShipment.distance - (distanceToTarget ? distanceToTarget / 1000 : currentShipment.distance))}
+                  totalDistance={currentShipment.distance}
+                  vehicleType="MINI_TRUCK"
+                  fuelType="DIESEL"
+                  isActive={true}
+                  showDetails={true}
+                />
+
                 <div className="p-3 bg-secondary rounded-lg">
                   <p className="text-xs text-muted-foreground">Drop Location</p>
                   <p className="font-medium text-sm mt-1">{currentShipment.dropAddress}</p>
@@ -310,8 +321,8 @@ const ActiveDeliveryCard: React.FC = () => {
                 </div>
 
                 {/* Distance indicator */}
-                <div className="text-center py-4">
-                  <p className="text-3xl font-bold text-foreground">
+                <div className="text-center py-2">
+                  <p className="text-2xl font-bold text-foreground">
                     {distanceToTarget ? `${(distanceToTarget / 1000).toFixed(1)} km` : '...'}
                   </p>
                   <p className="text-sm text-muted-foreground">to destination</p>

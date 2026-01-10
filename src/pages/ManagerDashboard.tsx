@@ -1,21 +1,24 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BarChart3, Truck, Map, IndianRupee, Users, Shield } from 'lucide-react';
+import { ArrowLeft, BarChart3, Truck, Map, IndianRupee, Users, Shield, Leaf } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FleetMapSkeleton, StatsGridSkeleton, ChartSkeleton } from '@/components/dashboard/DashboardSkeletons';
 import SustainabilityCard from '@/components/dashboard/SustainabilityCard';
 import { PricingManagement } from '@/components/manager/PricingManagement';
 import { FleetManagement } from '@/components/manager/FleetManagement';
 import { DriverManagement } from '@/components/manager/DriverManagement';
 import { DriverApprovalPanel } from '@/components/manager/DriverApprovalPanel';
+import EmissionsDashboard from '@/components/emissions/EmissionsDashboard';
 import { useUserRole } from '@/hooks/useUserRole';
 
 const FleetMap = lazy(() => import('@/components/map/FleetMap'));
 
 const ManagerDashboard: React.FC = () => {
   const { isAdmin, isManager } = useUserRole();
+  const [activeTab, setActiveTab] = useState('overview');
 
   return (
     <div className="min-h-screen bg-background">
@@ -54,71 +57,90 @@ const ManagerDashboard: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto p-4 md:p-6 space-y-6">
-        {/* Fleet Map */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Map className="w-5 h-5 text-accent" />
-                Live Fleet Tracking
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Suspense fallback={<FleetMapSkeleton className="h-[400px]" />}>
-                <FleetMap className="h-[400px]" />
-              </Suspense>
-            </CardContent>
-          </Card>
-        </motion.div>
+      <main className="container mx-auto p-4 md:p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid mb-6">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="emissions" className="flex items-center gap-2">
+              <Leaf className="w-4 h-4" />
+              Carbon Emissions
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Sustainability Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <SustainabilityCard />
-        </motion.div>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Fleet Map */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Map className="w-5 h-5 text-accent" />
+                    Live Fleet Tracking
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Suspense fallback={<FleetMapSkeleton className="h-[400px]" />}>
+                    <FleetMap className="h-[400px]" />
+                  </Suspense>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-        {/* Fleet Management */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <FleetManagement />
-        </motion.div>
+            {/* Sustainability Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <SustainabilityCard />
+            </motion.div>
 
-        {/* Driver Approval Panel */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
-          <DriverApprovalPanel />
-        </motion.div>
+            {/* Fleet Management */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <FleetManagement />
+            </motion.div>
 
-        {/* Driver Management */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <DriverManagement />
-        </motion.div>
+            {/* Driver Approval Panel */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+            >
+              <DriverApprovalPanel />
+            </motion.div>
 
-        {/* Pricing Management */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-        >
-          <PricingManagement />
-        </motion.div>
+            {/* Driver Management */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <DriverManagement />
+            </motion.div>
+
+            {/* Pricing Management */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              <PricingManagement />
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="emissions">
+            <EmissionsDashboard />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
