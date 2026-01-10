@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Truck, Bike, Car, Power, PowerOff } from 'lucide-react';
+import { Plus, Pencil, Trash2, Truck, Bike, Car, Power, PowerOff, Eye } from 'lucide-react';
 import { 
   getFleetVehicles, 
   addFleetVehicle, 
@@ -19,6 +19,7 @@ import {
   type FleetVehicle 
 } from '@/lib/fleet-service';
 import { VEHICLE_LABELS, type VehicleType } from '@/lib/pricing-service';
+import { VehicleDetailsDialog } from './VehicleDetailsDialog';
 import { format } from 'date-fns';
 
 const VEHICLE_TYPES: VehicleType[] = ['BIKE', 'THREE_WHEELER', 'MINI_TRUCK', 'TRUCK', 'LARGE_TRUCK'];
@@ -35,6 +36,7 @@ export function FleetManagement() {
   const queryClient = useQueryClient();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<FleetVehicle | null>(null);
+  const [viewingVehicle, setViewingVehicle] = useState<FleetVehicle | null>(null);
   
   // Form state
   const [vehicleNumber, setVehicleNumber] = useState('');
@@ -319,6 +321,14 @@ export function FleetManagement() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => setViewingVehicle(vehicle)}
+                        title="View Details"
+                      >
+                        <Eye className="h-4 w-4 text-primary" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => toggleActive(vehicle)}
                         title={vehicle.is_active ? 'Deactivate' : 'Activate'}
                       >
@@ -449,6 +459,13 @@ export function FleetManagement() {
           </div>
         )}
       </CardContent>
+
+      {/* Vehicle Details Dialog */}
+      <VehicleDetailsDialog
+        vehicle={viewingVehicle}
+        open={!!viewingVehicle}
+        onOpenChange={(open) => !open && setViewingVehicle(null)}
+      />
     </Card>
   );
 }
