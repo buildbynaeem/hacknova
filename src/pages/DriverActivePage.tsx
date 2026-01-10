@@ -9,6 +9,7 @@ import ActiveDeliveryCard from '@/components/driver/ActiveDeliveryCard';
 import DriverCheckInForm, { CheckInData } from '@/components/driver/DriverCheckInForm';
 import DriverCheckOutForm, { CheckOutSummary } from '@/components/driver/DriverCheckOutForm';
 import DriverNotifications from '@/components/driver/DriverNotifications';
+import DamageReportDialog from '@/components/driver/DamageReportDialog';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,7 +29,7 @@ const DriverActivePage: React.FC = () => {
 
   const [showCheckInForm, setShowCheckInForm] = useState(false);
   const [showCheckOutForm, setShowCheckOutForm] = useState(false);
-  const [driverProfile, setDriverProfile] = useState<{ fullName: string; vehicleNumber: string } | null>(null);
+  const [driverProfile, setDriverProfile] = useState<{ fullName: string; vehicleNumber: string; vehicleId: string | null } | null>(null);
 
   // Fetch driver profile data
   useEffect(() => {
@@ -45,13 +46,14 @@ const DriverActivePage: React.FC = () => {
       // Get assigned vehicle
       const { data: vehicle } = await supabase
         .from('fleet_vehicles')
-        .select('vehicle_number')
+        .select('id, vehicle_number')
         .eq('current_driver_id', user.id)
         .maybeSingle();
 
       setDriverProfile({
         fullName: profile?.full_name || user.email?.split('@')[0] || 'Driver',
         vehicleNumber: vehicle?.vehicle_number || 'No vehicle assigned',
+        vehicleId: vehicle?.id || null,
       });
     };
 
@@ -107,10 +109,14 @@ const DriverActivePage: React.FC = () => {
               <User className="w-7 h-7 text-accent" />
             )}
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-bold">{driverProfile?.fullName || 'Driver'}</h1>
             <p className="text-primary-foreground/70 text-sm">{driverProfile?.vehicleNumber || 'Loading...'}</p>
           </div>
+          <DamageReportDialog 
+            vehicleId={driverProfile?.vehicleId || null} 
+            vehicleNumber={driverProfile?.vehicleNumber || 'No vehicle assigned'} 
+          />
         </motion.div>
 
         {/* Quick Stats - Only show when online */}

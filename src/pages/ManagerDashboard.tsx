@@ -12,6 +12,7 @@ import { FleetManagement } from '@/components/manager/FleetManagement';
 import { DriverManagement } from '@/components/manager/DriverManagement';
 import { DriverApprovalPanel } from '@/components/manager/DriverApprovalPanel';
 import { ActiveDeliveriesPanel } from '@/components/manager/ActiveDeliveriesPanel';
+import { DamageReportsPanel } from '@/components/manager/DamageReportsPanel';
 import FuelMetricsPanel from '@/components/manager/FuelMetricsPanel';
 import EmissionsDashboard from '@/components/emissions/EmissionsDashboard';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -117,6 +118,15 @@ const ManagerDashboard: React.FC = () => {
               transition={{ delay: 0.2 }}
             >
               <FleetManagement />
+            </motion.div>
+
+            {/* Damage Reports */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.22 }}
+            >
+              <DamageReportsPanel />
             </motion.div>
 
             {/* Driver Approval Panel */}

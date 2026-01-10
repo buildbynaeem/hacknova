@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      damage_reports: {
+        Row: {
+          created_at: string
+          damage_date: string
+          damage_description: string
+          damage_severity: string
+          driver_id: string
+          id: string
+          is_resolved: boolean
+          location: string | null
+          manager_notes: string | null
+          repair_cost: number | null
+          resolved_at: string | null
+          resolved_by: string | null
+          updated_at: string
+          vehicle_id: string
+          vehicle_number: string
+        }
+        Insert: {
+          created_at?: string
+          damage_date?: string
+          damage_description: string
+          damage_severity?: string
+          driver_id: string
+          id?: string
+          is_resolved?: boolean
+          location?: string | null
+          manager_notes?: string | null
+          repair_cost?: number | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          updated_at?: string
+          vehicle_id: string
+          vehicle_number: string
+        }
+        Update: {
+          created_at?: string
+          damage_date?: string
+          damage_description?: string
+          damage_severity?: string
+          driver_id?: string
+          id?: string
+          is_resolved?: boolean
+          location?: string | null
+          manager_notes?: string | null
+          repair_cost?: number | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          updated_at?: string
+          vehicle_id?: string
+          vehicle_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "damage_reports_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "fleet_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_eco_scores: {
         Row: {
           acceleration_score: number | null
