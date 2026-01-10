@@ -280,9 +280,31 @@ export async function uploadProofOfDelivery(
     return { url: null, error: uploadError.message };
   }
 
-  const { data: { publicUrl } } = supabase.storage
+  // Use signed URL for private bucket (1 hour expiry)
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
     .from('proof-of-delivery')
-    .getPublicUrl(fileName);
+    .createSignedUrl(fileName, 3600);
 
-  return { url: publicUrl, error: null };
+  if (signedUrlError || !signedUrlData?.signedUrl) {
+    console.error('Signed URL error:', signedUrlError);
+    return { url: null, error: signedUrlError?.message ?? 'Failed to create signed URL' };
+  }
+
+  return { url: signedUrlData.signedUrl, error: null };
+}
+
+// Helper function to get a fresh signed URL for existing POD images
+export async function getProofOfDeliveryUrl(
+  filePath: string
+): Promise<{ url: string | null; error: string | null }> {
+  const { data: signedUrlData, error } = await supabase.storage
+    .from('proof-of-delivery')
+    .createSignedUrl(filePath, 3600);
+
+  if (error || !signedUrlData?.signedUrl) {
+    console.error('Signed URL error:', error);
+    return { url: null, error: error?.message ?? 'Failed to create signed URL' };
+  }
+
+  return { url: signedUrlData.signedUrl, error: null };
 }
