@@ -64,36 +64,12 @@ interface DriverState {
   checkOut: (summary: TripSummary) => void;
 }
 
-// Mock shipment data
-const mockShipment: Shipment = {
-  id: '1',
-  trackingId: 'BL-2024-001234',
-  status: 'PICKUP_READY',
-  pickupOTP: '1234',
-  deliveryOTP: '5678',
-  pickupAddress: '123 Warehouse District, Industrial Area, Mumbai',
-  dropAddress: '456 Business Park, Andheri East, Mumbai',
-  pickupLat: 19.0760,
-  pickupLng: 72.8777,
-  dropLat: 19.1136,
-  dropLng: 72.8697,
-  senderName: 'Sunrise Logistics Pvt. Ltd.',
-  receiverName: 'Rahul Sharma',
-  receiverPhone: '+91 98765 43210',
-  carbonScore: 0,
-  distance: 12.5,
-  estimatedTime: '35 mins',
-  driverName: 'Amit Kumar',
-  vehicleNumber: 'MH 02 AB 1234',
-  createdAt: new Date(),
-};
-
 export const useDriverStore = create<DriverState>((set) => ({
-  location: { lat: 19.0760, lng: 72.8777 },
-  currentShipment: mockShipment,
+  location: { lat: 0, lng: 0 },
+  currentShipment: null,
   isOnline: false,
-  totalDeliveries: 47,
-  totalCarbonSaved: 156.8,
+  totalDeliveries: 0,
+  totalCarbonSaved: 0,
   checkInData: null,
   lastTripSummary: null,
   tripHistory: [],

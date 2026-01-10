@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Truck, Wifi, WifiOff, Power, MapPin, Clock, Package, Route, Fuel, TrendingDown } from 'lucide-react';
+import { ArrowLeft, Truck, Wifi, WifiOff, Power, MapPin, Clock, Package, Route, Fuel, TrendingDown, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDriverStore } from '@/store/driverStore';
@@ -9,8 +9,11 @@ import ActiveDeliveryCard from '@/components/driver/ActiveDeliveryCard';
 import DriverCheckInForm, { CheckInData } from '@/components/driver/DriverCheckInForm';
 import DriverCheckOutForm, { CheckOutSummary } from '@/components/driver/DriverCheckOutForm';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const DriverActivePage: React.FC = () => {
+  const { user } = useAuth();
   const { 
     isOnline, 
     totalDeliveries, 
@@ -24,6 +27,35 @@ const DriverActivePage: React.FC = () => {
 
   const [showCheckInForm, setShowCheckInForm] = useState(false);
   const [showCheckOutForm, setShowCheckOutForm] = useState(false);
+  const [driverProfile, setDriverProfile] = useState<{ fullName: string; vehicleNumber: string } | null>(null);
+
+  // Fetch driver profile data
+  useEffect(() => {
+    const fetchDriverData = async () => {
+      if (!user) return;
+
+      // Get profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      // Get assigned vehicle
+      const { data: vehicle } = await supabase
+        .from('fleet_vehicles')
+        .select('vehicle_number')
+        .eq('current_driver_id', user.id)
+        .maybeSingle();
+
+      setDriverProfile({
+        fullName: profile?.full_name || user.email?.split('@')[0] || 'Driver',
+        vehicleNumber: vehicle?.vehicle_number || 'No vehicle assigned',
+      });
+    };
+
+    fetchDriverData();
+  }, [user]);
 
   const handleCheckIn = (data: CheckInData) => {
     checkIn(data);
@@ -70,12 +102,12 @@ const DriverActivePage: React.FC = () => {
             {checkInData?.selfieUrl ? (
               <img src={checkInData.selfieUrl} alt="Driver" className="w-full h-full object-cover" />
             ) : (
-              <Truck className="w-7 h-7 text-accent" />
+              <User className="w-7 h-7 text-accent" />
             )}
           </div>
           <div>
-            <h1 className="text-xl font-bold">Amit Kumar</h1>
-            <p className="text-primary-foreground/70 text-sm">MH 02 AB 1234</p>
+            <h1 className="text-xl font-bold">{driverProfile?.fullName || 'Driver'}</h1>
+            <p className="text-primary-foreground/70 text-sm">{driverProfile?.vehicleNumber || 'Loading...'}</p>
           </div>
         </motion.div>
 
