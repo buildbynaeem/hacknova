@@ -33,22 +33,45 @@ const DriverNotifications: React.FC = () => {
     const fetchNotifications = async () => {
       const notifs: Notification[] = [];
 
-      // Fetch pending pickup orders assigned to this driver
-      const { data: pickups } = await supabase
+      // Fetch pickup orders assigned to this driver
+      const { data: assignedPickups } = await supabase
         .from('shipments')
-        .select('id, tracking_id, pickup_address, pickup_city, created_at')
+        .select('id, tracking_id, pickup_address, pickup_city, created_at, status')
         .eq('driver_id', user.id)
-        .in('status', ['CONFIRMED', 'PICKUP_READY'])
+        .in('status', ['CONFIRMED', 'PICKUP_READY', 'IN_TRANSIT'])
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (pickups) {
-        pickups.forEach((pickup) => {
+      if (assignedPickups) {
+        assignedPickups.forEach((pickup) => {
           notifs.push({
             id: `pickup-${pickup.id}`,
             type: 'pickup',
-            title: 'New Pickup Order',
-            message: `Pickup from ${pickup.pickup_city} - ${pickup.tracking_id}`,
+            title: pickup.status === 'IN_TRANSIT' ? 'Active Delivery' : 'Assigned Pickup',
+            message: `${pickup.status === 'IN_TRANSIT' ? 'Deliver to' : 'Pickup from'} ${pickup.pickup_city} - ${pickup.tracking_id}`,
+            timestamp: new Date(pickup.created_at),
+            read: false,
+            data: pickup,
+          });
+        });
+      }
+
+      // Fetch pending/unassigned shipments available for pickup
+      const { data: pendingPickups } = await supabase
+        .from('shipments')
+        .select('id, tracking_id, pickup_address, pickup_city, created_at, estimated_cost')
+        .is('driver_id', null)
+        .in('status', ['PENDING', 'CONFIRMED'])
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (pendingPickups) {
+        pendingPickups.forEach((pickup) => {
+          notifs.push({
+            id: `pending-${pickup.id}`,
+            type: 'pickup',
+            title: 'New Order Available',
+            message: `Pickup from ${pickup.pickup_city} - ${pickup.tracking_id}${pickup.estimated_cost ? ` · ₹${pickup.estimated_cost}` : ''}`,
             timestamp: new Date(pickup.created_at),
             read: false,
             data: pickup,
@@ -88,7 +111,7 @@ const DriverNotifications: React.FC = () => {
 
     fetchNotifications();
 
-    // Set up real-time subscription for new shipments
+    // Set up real-time subscription for shipment changes
     const channel = supabase
       .channel('driver-notifications')
       .on(
@@ -97,7 +120,6 @@ const DriverNotifications: React.FC = () => {
           event: '*',
           schema: 'public',
           table: 'shipments',
-          filter: `driver_id=eq.${user.id}`,
         },
         () => {
           fetchNotifications();
