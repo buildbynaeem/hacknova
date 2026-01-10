@@ -28,17 +28,40 @@ interface Shipment {
   createdAt: Date;
 }
 
+export interface CheckInData {
+  selfieUrl: string;
+  odometerReading: number;
+  fuelLevel: number;
+  timestamp: Date;
+}
+
+export interface TripSummary {
+  checkInData: CheckInData;
+  checkOutSelfieUrl: string;
+  checkOutOdometer: number;
+  checkOutFuel: number;
+  checkOutTimestamp: Date;
+  kmDriven: number;
+  fuelUsed: number;
+  avgFuelEfficiency: number;
+}
+
 interface DriverState {
   location: DriverLocation;
   currentShipment: Shipment | null;
   isOnline: boolean;
   totalDeliveries: number;
   totalCarbonSaved: number;
+  checkInData: CheckInData | null;
+  lastTripSummary: TripSummary | null;
+  tripHistory: TripSummary[];
   setLocation: (location: DriverLocation) => void;
   setCurrentShipment: (shipment: Shipment | null) => void;
   updateShipmentStatus: (status: Shipment['status']) => void;
   setOnline: (isOnline: boolean) => void;
   completeDelivery: (carbonSaved: number) => void;
+  checkIn: (data: CheckInData) => void;
+  checkOut: (summary: TripSummary) => void;
 }
 
 // Mock shipment data
@@ -68,9 +91,12 @@ const mockShipment: Shipment = {
 export const useDriverStore = create<DriverState>((set) => ({
   location: { lat: 19.0760, lng: 72.8777 },
   currentShipment: mockShipment,
-  isOnline: true,
+  isOnline: false,
   totalDeliveries: 47,
   totalCarbonSaved: 156.8,
+  checkInData: null,
+  lastTripSummary: null,
+  tripHistory: [],
   
   setLocation: (location) => set({ location }),
   
@@ -88,5 +114,17 @@ export const useDriverStore = create<DriverState>((set) => ({
     totalDeliveries: state.totalDeliveries + 1,
     totalCarbonSaved: state.totalCarbonSaved + carbonSaved,
     currentShipment: null,
+  })),
+
+  checkIn: (data) => set({ 
+    checkInData: data,
+    isOnline: true,
+  }),
+
+  checkOut: (summary) => set((state) => ({
+    isOnline: false,
+    checkInData: null,
+    lastTripSummary: summary,
+    tripHistory: [...state.tripHistory, summary],
   })),
 }));

@@ -1,14 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Truck, Wifi, WifiOff, Power, MapPin, Clock, Package } from 'lucide-react';
+import { ArrowLeft, Truck, Wifi, WifiOff, Power, MapPin, Clock, Package, Route, Fuel, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDriverStore } from '@/store/driverStore';
 import ActiveDeliveryCard from '@/components/driver/ActiveDeliveryCard';
+import DriverCheckInForm, { CheckInData } from '@/components/driver/DriverCheckInForm';
+import DriverCheckOutForm, { CheckOutSummary } from '@/components/driver/DriverCheckOutForm';
+import { toast } from 'sonner';
 
 const DriverActivePage: React.FC = () => {
-  const { isOnline, setOnline, totalDeliveries, totalCarbonSaved, currentShipment } = useDriverStore();
+  const { 
+    isOnline, 
+    totalDeliveries, 
+    totalCarbonSaved, 
+    currentShipment,
+    checkInData,
+    lastTripSummary,
+    checkIn,
+    checkOut
+  } = useDriverStore();
+
+  const [showCheckInForm, setShowCheckInForm] = useState(false);
+  const [showCheckOutForm, setShowCheckOutForm] = useState(false);
+
+  const handleCheckIn = (data: CheckInData) => {
+    checkIn(data);
+    setShowCheckInForm(false);
+    toast.success('You are now online! Ready to receive deliveries.');
+  };
+
+  const handleCheckOut = (summary: CheckOutSummary) => {
+    checkOut(summary);
+    setShowCheckOutForm(false);
+    toast.success(`Trip completed! You drove ${summary.kmDriven.toFixed(1)} km using ${summary.fuelUsed.toFixed(1)}% fuel.`);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -24,7 +51,7 @@ const DriverActivePage: React.FC = () => {
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={() => setOnline(false)}
+                onClick={() => setShowCheckOutForm(true)}
                 className="gap-2"
               >
                 <WifiOff className="w-4 h-4" />
@@ -39,8 +66,12 @@ const DriverActivePage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-4"
         >
-          <div className="w-14 h-14 rounded-full bg-accent/20 flex items-center justify-center">
-            <Truck className="w-7 h-7 text-accent" />
+          <div className="w-14 h-14 rounded-full bg-accent/20 flex items-center justify-center overflow-hidden">
+            {checkInData?.selfieUrl ? (
+              <img src={checkInData.selfieUrl} alt="Driver" className="w-full h-full object-cover" />
+            ) : (
+              <Truck className="w-7 h-7 text-accent" />
+            )}
           </div>
           <div>
             <h1 className="text-xl font-bold">Amit Kumar</h1>
@@ -64,6 +95,12 @@ const DriverActivePage: React.FC = () => {
               <p className="text-2xl font-bold">{totalCarbonSaved.toFixed(1)} kg</p>
               <p className="text-xs text-primary-foreground/70">CO₂ Saved</p>
             </div>
+            {checkInData && (
+              <div>
+                <p className="text-2xl font-bold">{checkInData.fuelLevel}%</p>
+                <p className="text-xs text-primary-foreground/70">Start Fuel</p>
+              </div>
+            )}
           </motion.div>
         )}
       </header>
@@ -71,7 +108,20 @@ const DriverActivePage: React.FC = () => {
       {/* Main Content */}
       <main className="p-4 -mt-2">
         <AnimatePresence mode="wait">
-          {!isOnline ? (
+          {showCheckInForm ? (
+            <DriverCheckInForm 
+              key="checkin"
+              onComplete={handleCheckIn}
+              onCancel={() => setShowCheckInForm(false)}
+            />
+          ) : showCheckOutForm && checkInData ? (
+            <DriverCheckOutForm
+              key="checkout"
+              checkInData={checkInData}
+              onComplete={handleCheckOut}
+              onCancel={() => setShowCheckOutForm(false)}
+            />
+          ) : !isOnline ? (
             /* Offline State - Go Online Form */
             <motion.div
               key="offline"
@@ -80,6 +130,34 @@ const DriverActivePage: React.FC = () => {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
+              {/* Last Trip Summary */}
+              {lastTripSummary && (
+                <Card className="mb-4 border-green-200 bg-green-50/50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-green-700">Last Trip Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="text-center">
+                        <Route className="w-4 h-4 mx-auto mb-1 text-green-600" />
+                        <p className="font-semibold text-green-700">{lastTripSummary.kmDriven.toFixed(1)} km</p>
+                        <p className="text-xs text-muted-foreground">Distance</p>
+                      </div>
+                      <div className="text-center">
+                        <Fuel className="w-4 h-4 mx-auto mb-1 text-orange-500" />
+                        <p className="font-semibold text-orange-600">{lastTripSummary.fuelUsed.toFixed(1)}%</p>
+                        <p className="text-xs text-muted-foreground">Fuel Used</p>
+                      </div>
+                      <div className="text-center">
+                        <TrendingDown className="w-4 h-4 mx-auto mb-1 text-blue-500" />
+                        <p className="font-semibold text-blue-600">{lastTripSummary.avgFuelEfficiency.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">km/%</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card className="border-2 border-dashed border-muted-foreground/20">
                 <CardHeader className="text-center pb-4">
                   <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
@@ -112,7 +190,7 @@ const DriverActivePage: React.FC = () => {
 
                   {/* Go Online Button */}
                   <Button
-                    onClick={() => setOnline(true)}
+                    onClick={() => setShowCheckInForm(true)}
                     size="lg"
                     className="w-full gap-3 h-14 text-lg bg-gradient-hero hover:opacity-90"
                   >
@@ -121,7 +199,7 @@ const DriverActivePage: React.FC = () => {
                   </Button>
 
                   <p className="text-xs text-center text-muted-foreground">
-                    By going online, you agree to accept and complete assigned deliveries
+                    You'll need to take a selfie and enter vehicle readings
                   </p>
                 </CardContent>
               </Card>
@@ -154,6 +232,28 @@ const DriverActivePage: React.FC = () => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ delay: 0.1 }}
             >
+              {/* Current Session Info */}
+              {checkInData && (
+                <Card className="mb-4 bg-primary/5 border-primary/20">
+                  <CardContent className="py-3">
+                    <div className="flex justify-between items-center text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                        <span className="text-muted-foreground">Session started</span>
+                      </div>
+                      <div className="flex gap-4">
+                        <span>
+                          <strong>{checkInData.odometerReading.toLocaleString()}</strong> km
+                        </span>
+                        <span>
+                          <strong>{checkInData.fuelLevel}%</strong> fuel
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {currentShipment ? (
                 <ActiveDeliveryCard />
               ) : (
