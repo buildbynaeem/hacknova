@@ -14,5 +14,11 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // Prevent duplicate React copies (common cause of context/runtime issues)
+    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
+  },
+  // Force Vite to re-bundle Leaflet/React-Leaflet cleanly (avoids stale prebundle artifacts)
+  optimizeDeps: {
+    exclude: ["leaflet", "react-leaflet", "@react-leaflet/core"],
   },
 }));
