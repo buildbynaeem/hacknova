@@ -12,7 +12,8 @@ import {
   Calendar,
   Weight,
   Box,
-  Clock
+  Clock,
+  CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +35,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { openRazorpayCheckout, verifyRazorpayPayment } from '@/lib/razorpay';
 
 interface BookingDialogProps {
   open: boolean;
@@ -160,18 +162,61 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
     
-    onBookingComplete(formData);
-    toast.success('Shipment booked successfully!', {
-      description: 'You will receive OTPs via SMS shortly.',
-    });
+    const estimatedCost = Math.round(50 + (parseFloat(formData.weight) || 1) * 15);
+    const receiptId = `RTZ-${Date.now()}`;
     
-    setIsSubmitting(false);
-    setFormData(initialFormData);
-    setCurrentStep(1);
-    onOpenChange(false);
+    try {
+      await openRazorpayCheckout({
+        amount: estimatedCost,
+        receipt: receiptId,
+        notes: {
+          pickupCity: formData.pickupCity,
+          dropCity: formData.dropCity,
+          packageType: formData.packageType,
+        },
+        prefill: {
+          name: formData.pickupContactName,
+          contact: formData.pickupContactPhone,
+        },
+        onSuccess: async (response) => {
+          try {
+            // Verify payment on server
+            const verification = await verifyRazorpayPayment(
+              response.razorpay_order_id,
+              response.razorpay_payment_id,
+              response.razorpay_signature
+            );
+            
+            if (verification.success) {
+              onBookingComplete(formData);
+              toast.success('Payment successful! Shipment booked!', {
+                description: `Payment ID: ${response.razorpay_payment_id}`,
+              });
+              
+              setFormData(initialFormData);
+              setCurrentStep(1);
+              onOpenChange(false);
+            } else {
+              toast.error('Payment verification failed');
+            }
+          } catch (verifyError) {
+            console.error('Verification error:', verifyError);
+            toast.error('Payment verification failed');
+          }
+          setIsSubmitting(false);
+        },
+        onError: (error) => {
+          console.error('Payment error:', error);
+          toast.error(error.description || error.message || 'Payment failed');
+          setIsSubmitting(false);
+        },
+      });
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error('Failed to initiate payment');
+      setIsSubmitting(false);
+    }
   };
 
   const renderStepContent = () => {
@@ -629,12 +674,12 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                 >
-                  <Package className="w-4 h-4" />
+                  <CreditCard className="w-4 h-4" />
                 </motion.div>
               ) : (
-                <Check className="w-4 h-4" />
+                <CreditCard className="w-4 h-4" />
               )}
-              {isSubmitting ? 'Booking...' : 'Confirm Booking'}
+              {isSubmitting ? 'Processing...' : 'Pay & Book'}
             </Button>
           )}
         </div>
