@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Leaf, Truck, Wrench, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { StatsGridSkeleton, ChartSkeleton } from '@/components/dashboard/DashboardSkeletons';
 import { getSustainabilityMetrics } from '@/lib/shipment-service';
 
 interface SustainabilityMetrics {
@@ -40,14 +41,9 @@ const SustainabilityCard: React.FC = () => {
 
   if (isLoading || !metrics) {
     return (
-      <div className="grid gap-4 md:grid-cols-3">
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="h-20 bg-secondary rounded" />
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-6">
+        <StatsGridSkeleton count={3} />
+        <ChartSkeleton />
       </div>
     );
   }

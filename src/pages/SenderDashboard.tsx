@@ -9,7 +9,6 @@ import {
   Search,
   Filter,
   Plus,
-  Loader2,
   LogOut,
   Radio
 } from 'lucide-react';
@@ -19,6 +18,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import BookingDialog from '@/components/sender/BookingDialog';
 import LiveTrackingPanel from '@/components/sender/LiveTrackingPanel';
+import { 
+  ShipmentListSkeleton, 
+  DashboardHeaderSkeleton 
+} from '@/components/dashboard/DashboardSkeletons';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealtimeShipments } from '@/hooks/useRealtimeShipments';
 import { createShipment, type CreateShipmentData } from '@/lib/shipment-service';
@@ -137,8 +140,24 @@ const SenderDashboard: React.FC = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      <div className="min-h-screen bg-background">
+        <DashboardHeaderSkeleton />
+        <main className="container mx-auto p-4 grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex gap-3">
+              <div className="flex-1 h-10 bg-muted/50 rounded-md animate-pulse" />
+              <div className="h-10 w-10 bg-muted/50 rounded-md animate-pulse" />
+            </div>
+            <ShipmentListSkeleton count={4} />
+          </div>
+          <div className="space-y-4">
+            <Card className="animate-fade-in">
+              <CardContent className="p-6">
+                <div className="h-52 bg-muted/50 rounded-lg animate-pulse" />
+              </CardContent>
+            </Card>
+          </div>
+        </main>
       </div>
     );
   }
@@ -207,9 +226,7 @@ const SenderDashboard: React.FC = () => {
 
           {/* Loading State */}
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            </div>
+            <ShipmentListSkeleton count={4} />
           ) : !isAuthenticated ? (
             <Card className="text-center py-12">
               <CardContent>
