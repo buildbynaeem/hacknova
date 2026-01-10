@@ -361,8 +361,19 @@ const ActiveDeliveryCard: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Display Delivery OTP to driver */}
+                <div className="p-4 bg-accent/10 border border-accent rounded-lg text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Delivery OTP (Show to receiver)</p>
+                  <p className="text-3xl font-mono font-bold text-accent tracking-widest">
+                    {currentShipment.deliveryOTP || '----'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Ask the receiver to confirm this OTP
+                  </p>
+                </div>
+
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Enter Delivery OTP</label>
+                  <label className="text-sm font-medium mb-2 block">Enter Delivery OTP from Receiver</label>
                   <div className="flex gap-3 justify-center">
                     {otp.map((digit, idx) => (
                       <Input
