@@ -62,6 +62,13 @@ export type Database = {
             referencedRelation: "shipments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "invoices_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments_secure"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -243,7 +250,132 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      shipments_secure: {
+        Row: {
+          carbon_score: number | null
+          created_at: string | null
+          delivered_at: string | null
+          delivery_address: string | null
+          delivery_city: string | null
+          delivery_lat: number | null
+          delivery_lng: number | null
+          delivery_otp: string | null
+          delivery_pincode: string | null
+          description: string | null
+          dimensions: string | null
+          distance_km: number | null
+          driver_id: string | null
+          driver_lat: number | null
+          driver_lng: number | null
+          estimated_cost: number | null
+          final_cost: number | null
+          id: string | null
+          is_fragile: boolean | null
+          package_type: Database["public"]["Enums"]["package_type"] | null
+          picked_up_at: string | null
+          pickup_address: string | null
+          pickup_city: string | null
+          pickup_contact_name: string | null
+          pickup_contact_phone: string | null
+          pickup_date: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          pickup_otp: string | null
+          pickup_pincode: string | null
+          pickup_time_slot: string | null
+          proof_of_delivery_url: string | null
+          receiver_name: string | null
+          receiver_phone: string | null
+          sender_id: string | null
+          status: Database["public"]["Enums"]["shipment_status"] | null
+          tracking_id: string | null
+          updated_at: string | null
+          weight: number | null
+        }
+        Insert: {
+          carbon_score?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_city?: string | null
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          delivery_otp?: string | null
+          delivery_pincode?: string | null
+          description?: string | null
+          dimensions?: string | null
+          distance_km?: number | null
+          driver_id?: string | null
+          driver_lat?: number | null
+          driver_lng?: number | null
+          estimated_cost?: number | null
+          final_cost?: number | null
+          id?: string | null
+          is_fragile?: boolean | null
+          package_type?: Database["public"]["Enums"]["package_type"] | null
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_city?: string | null
+          pickup_contact_name?: string | null
+          pickup_contact_phone?: never
+          pickup_date?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          pickup_otp?: string | null
+          pickup_pincode?: string | null
+          pickup_time_slot?: string | null
+          proof_of_delivery_url?: string | null
+          receiver_name?: string | null
+          receiver_phone?: never
+          sender_id?: string | null
+          status?: Database["public"]["Enums"]["shipment_status"] | null
+          tracking_id?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Update: {
+          carbon_score?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_city?: string | null
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          delivery_otp?: string | null
+          delivery_pincode?: string | null
+          description?: string | null
+          dimensions?: string | null
+          distance_km?: number | null
+          driver_id?: string | null
+          driver_lat?: number | null
+          driver_lng?: number | null
+          estimated_cost?: number | null
+          final_cost?: number | null
+          id?: string | null
+          is_fragile?: boolean | null
+          package_type?: Database["public"]["Enums"]["package_type"] | null
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_city?: string | null
+          pickup_contact_name?: string | null
+          pickup_contact_phone?: never
+          pickup_date?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          pickup_otp?: string | null
+          pickup_pincode?: string | null
+          pickup_time_slot?: string | null
+          proof_of_delivery_url?: string | null
+          receiver_name?: string | null
+          receiver_phone?: never
+          sender_id?: string | null
+          status?: Database["public"]["Enums"]["shipment_status"] | null
+          tracking_id?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_invoice_number: { Args: never; Returns: string }
