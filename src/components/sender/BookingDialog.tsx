@@ -13,8 +13,11 @@ import {
   Weight,
   Box,
   Clock,
-  CreditCard
+  CreditCard,
+  LocateFixed,
+  Loader2
 } from 'lucide-react';
+import { useGeolocation } from '@/hooks/useGeolocation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -116,6 +119,31 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<BookingData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { getCurrentLocation, isLoading: isGeoLoading } = useGeolocation();
+
+  const handleUsePickupLocation = async () => {
+    const location = await getCurrentLocation();
+    if (location) {
+      setFormData(prev => ({
+        ...prev,
+        pickupAddress: location.address,
+        pickupCity: location.city,
+        pickupPincode: location.pincode,
+      }));
+    }
+  };
+
+  const handleUseDeliveryLocation = async () => {
+    const location = await getCurrentLocation();
+    if (location) {
+      setFormData(prev => ({
+        ...prev,
+        dropAddress: location.address,
+        dropCity: location.city,
+        dropPincode: location.pincode,
+      }));
+    }
+  };
 
   const updateField = (field: keyof BookingData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -231,7 +259,24 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="pickupAddress">Pickup Address *</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="pickupAddress">Pickup Address *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleUsePickupLocation}
+                  disabled={isGeoLoading}
+                  className="h-7 text-xs text-accent hover:text-accent/80"
+                >
+                  {isGeoLoading ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <LocateFixed className="w-3 h-3 mr-1" />
+                  )}
+                  Use My Location
+                </Button>
+              </div>
               <Textarea
                 id="pickupAddress"
                 placeholder="Enter complete pickup address..."
@@ -326,7 +371,24 @@ const BookingDialog: React.FC<BookingDialogProps> = ({
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="dropAddress">Delivery Address *</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="dropAddress">Delivery Address *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleUseDeliveryLocation}
+                  disabled={isGeoLoading}
+                  className="h-7 text-xs text-accent hover:text-accent/80"
+                >
+                  {isGeoLoading ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <LocateFixed className="w-3 h-3 mr-1" />
+                  )}
+                  Use My Location
+                </Button>
+              </div>
               <Textarea
                 id="dropAddress"
                 placeholder="Enter complete delivery address..."
