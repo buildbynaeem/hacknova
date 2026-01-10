@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Package, 
@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { useDriverStore } from '@/store/driverStore';
 import { useDriverLocation } from '@/hooks/useDriverLocation';
 import { validatePickupOTP, validateDeliveryOTP, completeDelivery } from '@/lib/delivery-actions';
+import ShipmentMap from '@/components/map/ShipmentMap';
 import { toast } from 'sonner';
 
 type DeliveryState = 'pickup' | 'transit' | 'delivery' | 'completed';
@@ -180,51 +181,18 @@ const ActiveDeliveryCard: React.FC = () => {
           </div>
         </div>
 
-        {/* Map placeholder with driver position */}
-        <div className="map-container h-40 relative">
-          <div className="absolute inset-0 bg-secondary/50" />
-          {/* Driver marker */}
-          <motion.div 
-            className="absolute z-10"
-            style={{ 
-              left: `${30 + (deliveryState === 'transit' ? 20 : deliveryState === 'delivery' || deliveryState === 'completed' ? 40 : 0)}%`,
-              top: '50%',
-              transform: 'translate(-50%, -50%)'
-            }}
-            animate={{ 
-              x: deliveryState === 'transit' ? [0, 10, 0] : 0 
-            }}
-            transition={{ repeat: Infinity, duration: 2 }}
-          >
-            <div className="relative">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center shadow-lg">
-                <Truck className="w-5 h-5 text-accent-foreground" />
-              </div>
-              {deliveryState === 'transit' && (
-                <div className="absolute inset-0 bg-accent rounded-full animate-pulse-ring" />
-              )}
-            </div>
-          </motion.div>
-          
-          {/* Destination marker */}
-          <div className="absolute right-[15%] top-1/2 -translate-y-1/2">
-            <div className="w-8 h-8 bg-success rounded-full flex items-center justify-center shadow-md">
-              <MapPin className="w-4 h-4 text-success-foreground" />
-            </div>
-          </div>
-
-          {/* Route line */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none">
-            <path 
-              d={`M ${30 + (deliveryState === 'transit' ? 20 : deliveryState === 'delivery' || deliveryState === 'completed' ? 40 : 0)}% 50% Q 60% 35% 85% 50%`}
-              stroke="hsl(var(--accent))"
-              strokeWidth="3"
-              strokeDasharray="8 4"
-              fill="none"
-              opacity="0.6"
-            />
-          </svg>
-        </div>
+        {/* Interactive Map with real Leaflet */}
+        <ShipmentMap
+          className="h-44"
+          pickupPosition={{ lat: 19.076, lng: 72.8777 }}
+          deliveryPosition={dropLocation}
+          driverPosition={deliveryState !== 'pickup' ? location : null}
+          pickupAddress={currentShipment.pickupAddress}
+          deliveryAddress={currentShipment.dropAddress}
+          driverName="You"
+          showRoute={true}
+          isLive={deliveryState === 'transit'}
+        />
       </Card>
 
       {/* State-specific content */}

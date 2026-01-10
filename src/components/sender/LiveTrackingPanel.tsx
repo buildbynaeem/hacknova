@@ -1,13 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  MapPin, 
-  Truck, 
   Phone, 
   FileText, 
   Package, 
   Eye,
-  Navigation,
   Clock,
   Leaf
 } from 'lucide-react';
@@ -15,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useRealtimeShipment } from '@/hooks/useRealtimeShipments';
+import ShipmentMap from '@/components/map/ShipmentMap';
 import type { Database } from '@/integrations/supabase/types';
 
 type Shipment = Database['public']['Tables']['shipments']['Row'];
@@ -47,6 +45,45 @@ const LiveTrackingPanel: React.FC<LiveTrackingPanelProps> = ({
         return <Badge>{status}</Badge>;
     }
   };
+
+  // Generate mock positions based on shipment data for demo
+  const mapPositions = useMemo(() => {
+    if (!shipment) return { pickup: null, delivery: null, driver: null };
+    
+    // Mumbai area coordinates for demo
+    const basePickup = { lat: 19.076 + Math.random() * 0.05, lng: 72.877 + Math.random() * 0.05 };
+    const baseDelivery = { lat: 19.12 + Math.random() * 0.05, lng: 72.85 + Math.random() * 0.05 };
+    
+    // Use actual coordinates if available, otherwise use mock
+    const pickup = shipment.pickup_lat && shipment.pickup_lng 
+      ? { lat: shipment.pickup_lat, lng: shipment.pickup_lng }
+      : basePickup;
+      
+    const delivery = shipment.delivery_lat && shipment.delivery_lng
+      ? { lat: shipment.delivery_lat, lng: shipment.delivery_lng }
+      : baseDelivery;
+
+    // Driver position - between pickup and delivery based on status
+    let driver = null;
+    if (shipment.status === 'IN_TRANSIT') {
+      if (driverLocation) {
+        driver = driverLocation;
+      } else if (shipment.driver_lat && shipment.driver_lng) {
+        driver = { lat: shipment.driver_lat, lng: shipment.driver_lng };
+      } else {
+        // Mock driver position between pickup and delivery
+        const progress = 0.3 + Math.random() * 0.4;
+        driver = {
+          lat: pickup.lat + (delivery.lat - pickup.lat) * progress,
+          lng: pickup.lng + (delivery.lng - pickup.lng) * progress,
+        };
+      }
+    } else if (shipment.status === 'DELIVERED') {
+      driver = delivery;
+    }
+
+    return { pickup, delivery, driver };
+  }, [shipment, driverLocation]);
 
   return (
     <Card>
@@ -82,60 +119,18 @@ const LiveTrackingPanel: React.FC<LiveTrackingPanelProps> = ({
               exit={{ opacity: 0, y: -10 }}
               className="space-y-4"
             >
-              {/* Map with live driver position */}
-              <div className="map-container h-48 relative rounded-lg overflow-hidden">
-                <div className="absolute inset-0 bg-secondary/50 flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="w-8 h-8 mx-auto text-accent mb-2" />
-                    <p className="text-sm text-muted-foreground">Live map view</p>
-                  </div>
-                </div>
-                
-                {/* Delivery destination marker */}
-                <div className="absolute right-4 top-4">
-                  <div className="w-8 h-8 bg-success rounded-full flex items-center justify-center shadow-md">
-                    <MapPin className="w-4 h-4 text-success-foreground" />
-                  </div>
-                </div>
-
-                {/* Live driver position */}
-                {shipment.status === 'IN_TRANSIT' && (
-                  <motion.div 
-                    className="absolute"
-                    initial={{ left: '20%', top: '50%' }}
-                    animate={{ 
-                      left: driverLocation ? `${30 + Math.random() * 20}%` : '25%',
-                      top: '50%'
-                    }}
-                    transition={{ 
-                      duration: 2,
-                      ease: 'easeInOut'
-                    }}
-                    style={{ transform: 'translate(-50%, -50%)' }}
-                  >
-                    <div className="relative">
-                      <motion.div
-                        className="absolute inset-0 bg-accent rounded-full"
-                        animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                      />
-                      <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center shadow-lg relative z-10">
-                        <Truck className="w-5 h-5 text-accent-foreground" />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Live coordinates display */}
-                {driverLocation && shipment.status === 'IN_TRANSIT' && (
-                  <div className="absolute bottom-2 left-2 bg-card/90 backdrop-blur-sm rounded-md px-2 py-1 text-xs flex items-center gap-1">
-                    <Navigation className="w-3 h-3 text-accent" />
-                    <span className="font-mono">
-                      {driverLocation.lat.toFixed(4)}, {driverLocation.lng.toFixed(4)}
-                    </span>
-                  </div>
-                )}
-              </div>
+              {/* Interactive Map with Leaflet */}
+              <ShipmentMap
+                className="h-52"
+                driverPosition={mapPositions.driver}
+                pickupPosition={mapPositions.pickup}
+                deliveryPosition={mapPositions.delivery}
+                pickupAddress={`${shipment.pickup_address}, ${shipment.pickup_city}`}
+                deliveryAddress={`${shipment.delivery_address}, ${shipment.delivery_city}`}
+                driverName="Driver"
+                showRoute={true}
+                isLive={shipment.status === 'IN_TRANSIT'}
+              />
 
               {/* Shipment Details */}
               <div className="space-y-3">
@@ -190,7 +185,7 @@ const LiveTrackingPanel: React.FC<LiveTrackingPanelProps> = ({
                       <span className="text-sm font-medium">Package in transit</span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Driver location updates in real-time
+                      Driver location updates in real-time on the map
                     </p>
                   </div>
                 )}
