@@ -1,14 +1,19 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
-import { Truck, User, Fuel, Calendar, Package, IndianRupee, Wrench, Route, Bike, Car } from 'lucide-react';
-import { FleetVehicle } from '@/lib/fleet-service';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Truck, User, Fuel, Calendar, Package, IndianRupee, Wrench, Route, Bike, Car, UserPlus, X } from 'lucide-react';
+import { FleetVehicle, updateFleetVehicle } from '@/lib/fleet-service';
 import { VEHICLE_LABELS, type VehicleType } from '@/lib/pricing-service';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 interface VehicleDetailsDialogProps {
   vehicle: FleetVehicle | null;
@@ -25,6 +30,10 @@ const VEHICLE_ICONS: Record<VehicleType, React.ReactNode> = {
 };
 
 export function VehicleDetailsDialog({ vehicle, open, onOpenChange }: VehicleDetailsDialogProps) {
+  const queryClient = useQueryClient();
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [selectedDriverId, setSelectedDriverId] = useState<string>('');
+
   const { data: driverInfo } = useQuery({
     queryKey: ['vehicle-driver', vehicle?.current_driver_id],
     queryFn: async () => {
@@ -37,6 +46,58 @@ export function VehicleDetailsDialog({ vehicle, open, onOpenChange }: VehicleDet
       return data;
     },
     enabled: !!vehicle?.current_driver_id,
+  });
+
+  // Get available drivers for assignment
+  const { data: availableDrivers } = useQuery({
+    queryKey: ['available-drivers'],
+    queryFn: async () => {
+      // Get all driver roles
+      const { data: driverRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'driver');
+
+      if (rolesError || !driverRoles) return [];
+
+      const driverUserIds = driverRoles.map(r => r.user_id);
+
+      // Get profiles for drivers
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, phone')
+        .in('user_id', driverUserIds);
+
+      return profiles || [];
+    },
+    enabled: isAssigning,
+  });
+
+  const assignDriverMutation = useMutation({
+    mutationFn: async (driverId: string | null) => {
+      if (!vehicle) throw new Error('No vehicle selected');
+      
+      // If assigning a new driver, first unassign from any other vehicle
+      if (driverId) {
+        await supabase
+          .from('fleet_vehicles')
+          .update({ current_driver_id: null })
+          .eq('current_driver_id', driverId);
+      }
+      
+      return updateFleetVehicle(vehicle.id, { current_driver_id: driverId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fleet-vehicles'] });
+      queryClient.invalidateQueries({ queryKey: ['vehicle-driver'] });
+      queryClient.invalidateQueries({ queryKey: ['drivers-with-vehicles'] });
+      toast.success(selectedDriverId ? 'Driver assigned successfully' : 'Driver unassigned');
+      setIsAssigning(false);
+      setSelectedDriverId('');
+    },
+    onError: (error) => {
+      toast.error('Failed to assign driver: ' + (error as Error).message);
+    },
   });
 
   const { data: deliveryStats } = useQuery({
@@ -106,11 +167,74 @@ export function VehicleDetailsDialog({ vehicle, open, onOpenChange }: VehicleDet
         <div className="space-y-6 mt-4">
           {/* Driver Section */}
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Assigned Driver
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Assigned Driver
+              </div>
+              {!isAssigning && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsAssigning(true)}
+                >
+                  <UserPlus className="h-3 w-3 mr-1" />
+                  {vehicle.current_driver_id ? 'Change' : 'Assign'}
+                </Button>
+              )}
             </h3>
-            {vehicle.current_driver_id ? (
+            
+            {isAssigning ? (
+              <Card>
+                <CardContent className="p-4 space-y-3">
+                  <div className="space-y-2">
+                    <Label>Select Driver</Label>
+                    <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a driver..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableDrivers?.map((driver) => (
+                          <SelectItem key={driver.user_id} value={driver.user_id}>
+                            {driver.full_name || 'Unnamed'} {driver.phone ? `(${driver.phone})` : ''}
+                          </SelectItem>
+                        ))}
+                        {(!availableDrivers || availableDrivers.length === 0) && (
+                          <SelectItem value="" disabled>No drivers available</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => { setIsAssigning(false); setSelectedDriverId(''); }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      onClick={() => assignDriverMutation.mutate(selectedDriverId || null)}
+                      disabled={!selectedDriverId || assignDriverMutation.isPending}
+                    >
+                      {assignDriverMutation.isPending ? 'Assigning...' : 'Assign Driver'}
+                    </Button>
+                    {vehicle.current_driver_id && (
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        onClick={() => assignDriverMutation.mutate(null)}
+                        disabled={assignDriverMutation.isPending}
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Unassign
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : vehicle.current_driver_id ? (
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
