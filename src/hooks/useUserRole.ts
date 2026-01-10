@@ -87,8 +87,9 @@ export function useUserRole() {
           isManager,
           isDriver,
           isSender,
-          isApprovedDriver: isDriver && driverStatus === 'APPROVED',
-          isPendingDriver: driverStatus === 'PENDING',
+          // Approved if driver role OR approved status (handles edge case where role wasn't added)
+          isApprovedDriver: isDriver || driverStatus === 'APPROVED',
+          isPendingDriver: driverStatus === 'PENDING' && !isDriver,
         });
       } catch (error) {
         console.error('Error fetching user roles:', error);
