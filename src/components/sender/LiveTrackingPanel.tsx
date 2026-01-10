@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Phone, 
@@ -6,7 +6,9 @@ import {
   Package, 
   Eye,
   Clock,
-  Leaf
+  Leaf,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +28,8 @@ const LiveTrackingPanel: React.FC<LiveTrackingPanelProps> = ({
   selectedShipmentId,
 }) => {
   const { shipment, driverLocation, loading } = useRealtimeShipment(selectedShipmentId);
+  const [showRouteComparison, setShowRouteComparison] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState<'eco' | 'standard' | 'fast'>('eco');
 
   const getStatusBadge = (status: Shipment['status']) => {
     switch (status) {
@@ -85,19 +89,40 @@ const LiveTrackingPanel: React.FC<LiveTrackingPanelProps> = ({
     return { pickup, delivery, driver };
   }, [shipment, driverLocation]);
 
+  const handleRouteSelect = (routeId: 'eco' | 'standard' | 'fast') => {
+    setSelectedRoute(routeId);
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Eye className="w-5 h-5 text-accent" />
-          Live Tracking
-          {shipment?.status === 'IN_TRANSIT' && (
-            <span className="relative flex h-2 w-2 ml-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-            </span>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Eye className="w-5 h-5 text-accent" />
+            Live Tracking
+            {shipment?.status === 'IN_TRANSIT' && (
+              <span className="relative flex h-2 w-2 ml-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+              </span>
+            )}
+          </CardTitle>
+          {shipment && (shipment.status === 'PENDING' || shipment.status === 'CONFIRMED') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs gap-1.5 h-7"
+              onClick={() => setShowRouteComparison(!showRouteComparison)}
+            >
+              {showRouteComparison ? (
+                <ToggleRight className="w-4 h-4 text-accent" />
+              ) : (
+                <ToggleLeft className="w-4 h-4" />
+              )}
+              Compare Routes
+            </Button>
           )}
-        </CardTitle>
+        </div>
       </CardHeader>
       <CardContent>
         <AnimatePresence mode="wait">
@@ -121,7 +146,7 @@ const LiveTrackingPanel: React.FC<LiveTrackingPanelProps> = ({
             >
               {/* Interactive Map with Leaflet */}
               <ShipmentMap
-                className="h-52"
+                className={showRouteComparison ? "h-72" : "h-52"}
                 driverPosition={mapPositions.driver}
                 pickupPosition={mapPositions.pickup}
                 deliveryPosition={mapPositions.delivery}
@@ -129,8 +154,31 @@ const LiveTrackingPanel: React.FC<LiveTrackingPanelProps> = ({
                 deliveryAddress={`${shipment.delivery_address}, ${shipment.delivery_city}`}
                 driverName="Driver"
                 showRoute={true}
+                showRouteOptimization={true}
+                showRouteComparison={showRouteComparison}
                 isLive={shipment.status === 'IN_TRANSIT'}
+                onRouteSelect={handleRouteSelect}
               />
+
+              {/* Route selection feedback */}
+              {showRouteComparison && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-muted/50 rounded-lg p-3"
+                >
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">
+                      {selectedRoute === 'eco' ? 'Eco-Friendly' : selectedRoute === 'fast' ? 'Express' : 'Standard'}
+                    </span>
+                    {' '}route selected. 
+                    {selectedRoute === 'eco' && ' Optimized for lowest carbon emissions.'}
+                    {selectedRoute === 'fast' && ' Fastest delivery time with highway routes.'}
+                    {selectedRoute === 'standard' && ' Balanced between time and cost.'}
+                  </p>
+                </motion.div>
+              )}
 
               {/* Shipment Details */}
               <div className="space-y-3">
