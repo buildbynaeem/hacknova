@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { Truck, User, Package, BarChart3, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Truck, Package, BarChart3, ArrowRight, ArrowLeft, LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, loading, signOut, isAuthenticated } = useAuth();
 
   const roles = [
     {
@@ -38,14 +41,40 @@ const LoginPage: React.FC = () => {
     },
   ];
 
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Signed out successfully');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation */}
-      <nav className="h-16 px-4 border-b border-border flex items-center">
+      <nav className="h-16 px-4 border-b border-border flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Home</span>
         </Link>
+        {isAuthenticated ? (
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">{user?.email}</span>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        ) : (
+          <Button variant="accent" size="sm" onClick={() => navigate('/auth')}>
+            Sign In
+          </Button>
+        )}
       </nav>
 
       {/* Main Content */}
@@ -62,8 +91,12 @@ const LoginPage: React.FC = () => {
               </div>
               <span className="font-bold text-2xl">Routezy</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">Welcome Back</h1>
-            <p className="text-muted-foreground">Select your role to continue</p>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">
+              {isAuthenticated ? `Welcome, ${user?.user_metadata?.full_name || 'User'}` : 'Welcome Back'}
+            </h1>
+            <p className="text-muted-foreground">
+              {isAuthenticated ? 'Select your role to continue' : 'Sign in to access your dashboard or explore as guest'}
+            </p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-4">
@@ -94,14 +127,24 @@ const LoginPage: React.FC = () => {
             ))}
           </div>
 
-          <motion.p 
-            className="text-center text-sm text-muted-foreground mt-8"
+          <motion.div 
+            className="text-center mt-8 space-y-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            This is a demo. Click any role to explore the dashboard.
-          </motion.p>
+            {!isAuthenticated && (
+              <p className="text-sm text-muted-foreground">
+                Don't have an account?{' '}
+                <Link to="/auth?mode=signup" className="text-accent hover:underline font-medium">
+                  Sign up
+                </Link>
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Demo OTPs: Pickup: 1234, Delivery: 5678
+            </p>
+          </motion.div>
         </div>
       </div>
     </div>

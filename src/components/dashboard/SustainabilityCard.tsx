@@ -3,7 +3,15 @@ import { motion } from 'framer-motion';
 import { Leaf, Truck, Wrench, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { getSustainabilityMetrics, SustainabilityMetrics } from '@/lib/delivery-actions';
+import { getSustainabilityMetrics } from '@/lib/shipment-service';
+
+interface SustainabilityMetrics {
+  totalCarbonSaved: number;
+  totalDeliveries: number;
+  activeDeliveries: number;
+  maintenanceCostPerKm: number;
+  fuelEfficiencyData: Array<{ month: string; standard: number; efficient: number }>;
+}
 
 const SustainabilityCard: React.FC = () => {
   const [metrics, setMetrics] = useState<SustainabilityMetrics | null>(null);
@@ -12,7 +20,19 @@ const SustainabilityCard: React.FC = () => {
   useEffect(() => {
     const fetchMetrics = async () => {
       const data = await getSustainabilityMetrics();
-      setMetrics(data);
+      // Add mock data for chart and maintenance cost
+      setMetrics({
+        ...data,
+        maintenanceCostPerKm: 2.45,
+        fuelEfficiencyData: [
+          { month: 'Jan', standard: 12.5, efficient: 8.2 },
+          { month: 'Feb', standard: 11.8, efficient: 7.9 },
+          { month: 'Mar', standard: 13.2, efficient: 8.5 },
+          { month: 'Apr', standard: 12.1, efficient: 7.6 },
+          { month: 'May', standard: 11.5, efficient: 7.2 },
+          { month: 'Jun', standard: 12.8, efficient: 8.0 },
+        ],
+      });
       setIsLoading(false);
     };
     fetchMetrics();
