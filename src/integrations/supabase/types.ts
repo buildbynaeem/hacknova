@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      driver_requests: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          license_number: string | null
+          phone: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["driver_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          license_number?: string | null
+          phone: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["driver_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          license_number?: string | null
+          phone?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["driver_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fleet_vehicles: {
         Row: {
           created_at: string
@@ -489,6 +534,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "manager" | "driver" | "sender"
+      driver_status: "PENDING" | "APPROVED" | "REJECTED"
       package_type: "DOCUMENTS" | "PARCEL" | "FRAGILE" | "HEAVY" | "PERISHABLE"
       shipment_status:
         | "PENDING"
@@ -631,6 +677,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "manager", "driver", "sender"],
+      driver_status: ["PENDING", "APPROVED", "REJECTED"],
       package_type: ["DOCUMENTS", "PARCEL", "FRAGILE", "HEAVY", "PERISHABLE"],
       shipment_status: [
         "PENDING",

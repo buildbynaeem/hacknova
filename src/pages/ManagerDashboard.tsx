@@ -1,17 +1,22 @@
 import React, { Suspense, lazy } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BarChart3, Truck, Map, IndianRupee, Users } from 'lucide-react';
+import { ArrowLeft, BarChart3, Truck, Map, IndianRupee, Users, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { FleetMapSkeleton, StatsGridSkeleton, ChartSkeleton } from '@/components/dashboard/DashboardSkeletons';
 import SustainabilityCard from '@/components/dashboard/SustainabilityCard';
 import { PricingManagement } from '@/components/manager/PricingManagement';
 import { FleetManagement } from '@/components/manager/FleetManagement';
 import { DriverManagement } from '@/components/manager/DriverManagement';
+import { DriverApprovalPanel } from '@/components/manager/DriverApprovalPanel';
+import { useUserRole } from '@/hooks/useUserRole';
 
 const FleetMap = lazy(() => import('@/components/map/FleetMap'));
 
 const ManagerDashboard: React.FC = () => {
+  const { isAdmin, isManager } = useUserRole();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -31,6 +36,12 @@ const ManagerDashboard: React.FC = () => {
                   <p className="text-xs text-muted-foreground">Sustainability & Performance</p>
                 </div>
               </div>
+              {(isAdmin || isManager) && (
+                <Badge variant="outline" className="gap-1 ml-2">
+                  <Shield className="w-3 h-3" />
+                  {isAdmin ? 'Admin' : 'Manager'}
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 bg-gradient-accent rounded-lg flex items-center justify-center">
@@ -82,11 +93,20 @@ const ManagerDashboard: React.FC = () => {
           <FleetManagement />
         </motion.div>
 
-        {/* Driver Management */}
+        {/* Driver Approval Panel */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
+        >
+          <DriverApprovalPanel />
+        </motion.div>
+
+        {/* Driver Management */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
         >
           <DriverManagement />
         </motion.div>
@@ -95,7 +115,7 @@ const ManagerDashboard: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.35 }}
         >
           <PricingManagement />
         </motion.div>
