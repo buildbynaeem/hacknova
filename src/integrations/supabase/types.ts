@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      driver_eco_scores: {
+        Row: {
+          acceleration_score: number | null
+          avg_fuel_efficiency: number | null
+          badges: string[] | null
+          braking_score: number | null
+          created_at: string
+          driver_id: string
+          eco_rank: string | null
+          fuel_efficiency_score: number | null
+          id: string
+          idling_score: number | null
+          monthly_co2_emitted_kg: number | null
+          monthly_deliveries: number | null
+          monthly_distance_km: number | null
+          monthly_fuel_liters: number | null
+          overall_eco_score: number | null
+          total_co2_emitted_kg: number | null
+          total_deliveries: number | null
+          total_distance_km: number | null
+          total_fuel_liters: number | null
+          updated_at: string
+        }
+        Insert: {
+          acceleration_score?: number | null
+          avg_fuel_efficiency?: number | null
+          badges?: string[] | null
+          braking_score?: number | null
+          created_at?: string
+          driver_id: string
+          eco_rank?: string | null
+          fuel_efficiency_score?: number | null
+          id?: string
+          idling_score?: number | null
+          monthly_co2_emitted_kg?: number | null
+          monthly_deliveries?: number | null
+          monthly_distance_km?: number | null
+          monthly_fuel_liters?: number | null
+          overall_eco_score?: number | null
+          total_co2_emitted_kg?: number | null
+          total_deliveries?: number | null
+          total_distance_km?: number | null
+          total_fuel_liters?: number | null
+          updated_at?: string
+        }
+        Update: {
+          acceleration_score?: number | null
+          avg_fuel_efficiency?: number | null
+          badges?: string[] | null
+          braking_score?: number | null
+          created_at?: string
+          driver_id?: string
+          eco_rank?: string | null
+          fuel_efficiency_score?: number | null
+          id?: string
+          idling_score?: number | null
+          monthly_co2_emitted_kg?: number | null
+          monthly_deliveries?: number | null
+          monthly_distance_km?: number | null
+          monthly_fuel_liters?: number | null
+          overall_eco_score?: number | null
+          total_co2_emitted_kg?: number | null
+          total_deliveries?: number | null
+          total_distance_km?: number | null
+          total_fuel_liters?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       driver_requests: {
         Row: {
           created_at: string
@@ -59,14 +128,44 @@ export type Database = {
         }
         Relationships: []
       }
+      emission_factors: {
+        Row: {
+          co2_kg_per_liter: number
+          created_at: string
+          description: string | null
+          fuel_type: string
+          id: string
+          source: string | null
+        }
+        Insert: {
+          co2_kg_per_liter: number
+          created_at?: string
+          description?: string | null
+          fuel_type: string
+          id?: string
+          source?: string | null
+        }
+        Update: {
+          co2_kg_per_liter?: number
+          created_at?: string
+          description?: string | null
+          fuel_type?: string
+          id?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
       fleet_vehicles: {
         Row: {
+          avg_co2_per_km: number | null
           created_at: string
           current_driver_id: string | null
+          fuel_efficiency_lpk: number | null
           fuel_type: string | null
           id: string
           is_active: boolean
           last_maintenance_date: string | null
+          lifetime_co2_kg: number | null
           make: string | null
           model: string | null
           next_maintenance_date: string | null
@@ -77,12 +176,15 @@ export type Database = {
           year: number | null
         }
         Insert: {
+          avg_co2_per_km?: number | null
           created_at?: string
           current_driver_id?: string | null
+          fuel_efficiency_lpk?: number | null
           fuel_type?: string | null
           id?: string
           is_active?: boolean
           last_maintenance_date?: string | null
+          lifetime_co2_kg?: number | null
           make?: string | null
           model?: string | null
           next_maintenance_date?: string | null
@@ -93,12 +195,15 @@ export type Database = {
           year?: number | null
         }
         Update: {
+          avg_co2_per_km?: number | null
           created_at?: string
           current_driver_id?: string | null
+          fuel_efficiency_lpk?: number | null
           fuel_type?: string | null
           id?: string
           is_active?: boolean
           last_maintenance_date?: string | null
+          lifetime_co2_kg?: number | null
           make?: string | null
           model?: string | null
           next_maintenance_date?: string | null
@@ -109,6 +214,79 @@ export type Database = {
           year?: number | null
         }
         Relationships: []
+      }
+      fuel_entries: {
+        Row: {
+          co2_emitted_kg: number | null
+          created_at: string
+          driver_id: string | null
+          entry_date: string
+          fuel_cost: number | null
+          fuel_liters: number
+          fuel_type: string
+          id: string
+          notes: string | null
+          odometer_reading: number | null
+          shipment_id: string | null
+          trip_distance_km: number | null
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          co2_emitted_kg?: number | null
+          created_at?: string
+          driver_id?: string | null
+          entry_date?: string
+          fuel_cost?: number | null
+          fuel_liters: number
+          fuel_type?: string
+          id?: string
+          notes?: string | null
+          odometer_reading?: number | null
+          shipment_id?: string | null
+          trip_distance_km?: number | null
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          co2_emitted_kg?: number | null
+          created_at?: string
+          driver_id?: string | null
+          entry_date?: string
+          fuel_cost?: number | null
+          fuel_liters?: number
+          fuel_type?: string
+          id?: string
+          notes?: string | null
+          odometer_reading?: number | null
+          shipment_id?: string | null
+          trip_distance_km?: number | null
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fuel_entries_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuel_entries_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments_secure"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuel_entries_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "fleet_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {
@@ -392,6 +570,62 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_emissions: {
+        Row: {
+          avg_co2_per_km: number | null
+          avg_fuel_efficiency: number | null
+          created_at: string
+          id: string
+          idle_time_hours: number | null
+          period_end: string
+          period_start: string
+          period_type: string
+          total_co2_kg: number | null
+          total_distance_km: number | null
+          total_fuel_liters: number | null
+          total_trips: number | null
+          vehicle_id: string
+        }
+        Insert: {
+          avg_co2_per_km?: number | null
+          avg_fuel_efficiency?: number | null
+          created_at?: string
+          id?: string
+          idle_time_hours?: number | null
+          period_end: string
+          period_start: string
+          period_type?: string
+          total_co2_kg?: number | null
+          total_distance_km?: number | null
+          total_fuel_liters?: number | null
+          total_trips?: number | null
+          vehicle_id: string
+        }
+        Update: {
+          avg_co2_per_km?: number | null
+          avg_fuel_efficiency?: number | null
+          created_at?: string
+          id?: string
+          idle_time_hours?: number | null
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          total_co2_kg?: number | null
+          total_distance_km?: number | null
+          total_fuel_liters?: number | null
+          total_trips?: number | null
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_emissions_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "fleet_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       shipments_secure: {
@@ -522,6 +756,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_co2_emissions: {
+        Args: { p_fuel_liters: number; p_fuel_type: string }
+        Returns: number
+      }
       generate_invoice_number: { Args: never; Returns: string }
       generate_tracking_id: { Args: never; Returns: string }
       has_role: {
