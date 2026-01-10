@@ -34,6 +34,8 @@ export function PricingManagement() {
   const [historyVehicle, setHistoryVehicle] = useState<VehicleType | null>(null);
   const [costPerKm, setCostPerKm] = useState('');
   const [baseFare, setBaseFare] = useState('');
+  const [minWeight, setMinWeight] = useState('');
+  const [maxWeight, setMaxWeight] = useState('');
 
   const { data: pricing, isLoading } = useQuery({
     queryKey: ['pricing-config'],
@@ -47,14 +49,22 @@ export function PricingManagement() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ vehicleType, costPerKm, baseFare }: { vehicleType: VehicleType; costPerKm: number; baseFare: number }) =>
-      updatePricing(vehicleType, costPerKm, baseFare),
+    mutationFn: ({ vehicleType, costPerKm, baseFare, minWeight, maxWeight }: { 
+      vehicleType: VehicleType; 
+      costPerKm: number; 
+      baseFare: number;
+      minWeight: number;
+      maxWeight: number;
+    }) =>
+      updatePricing(vehicleType, costPerKm, baseFare, minWeight, maxWeight),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing-config'] });
       toast.success('Pricing updated successfully');
       setEditingVehicle(null);
       setCostPerKm('');
       setBaseFare('');
+      setMinWeight('');
+      setMaxWeight('');
     },
     onError: (error) => {
       toast.error('Failed to update pricing: ' + (error as Error).message);
@@ -65,14 +75,18 @@ export function PricingManagement() {
     setEditingVehicle(config.vehicle_type);
     setCostPerKm(config.cost_per_km.toString());
     setBaseFare(config.base_fare.toString());
+    setMinWeight(config.min_weight.toString());
+    setMaxWeight(config.max_weight.toString());
   };
 
   const handleSave = () => {
-    if (!editingVehicle || !costPerKm || !baseFare) return;
+    if (!editingVehicle || !costPerKm || !baseFare || !maxWeight) return;
     updateMutation.mutate({
       vehicleType: editingVehicle,
       costPerKm: parseFloat(costPerKm),
       baseFare: parseFloat(baseFare),
+      minWeight: parseFloat(minWeight || '0'),
+      maxWeight: parseFloat(maxWeight),
     });
   };
 
@@ -118,7 +132,7 @@ export function PricingManagement() {
                 <div>
                   <h4 className="font-medium">{VEHICLE_LABELS[config.vehicle_type]}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {VEHICLE_CAPACITIES[config.vehicle_type]}
+                    {config.min_weight}kg - {config.max_weight}kg capacity
                   </p>
                 </div>
               </div>
@@ -176,12 +190,41 @@ export function PricingManagement() {
                             placeholder="e.g., 50"
                           />
                         </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="minWeight">Min Weight (kg)</Label>
+                            <Input
+                              id="minWeight"
+                              type="number"
+                              step="1"
+                              min="0"
+                              value={minWeight}
+                              onChange={(e) => setMinWeight(e.target.value)}
+                              placeholder="e.g., 0"
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="maxWeight">Max Weight (kg)</Label>
+                            <Input
+                              id="maxWeight"
+                              type="number"
+                              step="1"
+                              min="1"
+                              value={maxWeight}
+                              onChange={(e) => setMaxWeight(e.target.value)}
+                              placeholder="e.g., 20"
+                            />
+                          </div>
+                        </div>
                         <div className="p-3 bg-muted rounded-lg">
                           <p className="text-sm text-muted-foreground">
                             Example: 10km delivery = ₹{baseFare || 0} + (10 × ₹{costPerKm || 0}) = 
                             <span className="font-semibold text-foreground ml-1">
                               ₹{(parseFloat(baseFare || '0') + 10 * parseFloat(costPerKm || '0')).toFixed(2)}
                             </span>
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Weight capacity: {minWeight || 0}kg - {maxWeight || 0}kg
                           </p>
                         </div>
                       </div>
@@ -214,6 +257,7 @@ export function PricingManagement() {
                           <TableRow>
                             <TableHead>Cost/km</TableHead>
                             <TableHead>Base Fare</TableHead>
+                            <TableHead>Weight Range</TableHead>
                             <TableHead>Effective From</TableHead>
                             <TableHead>Effective To</TableHead>
                             <TableHead>Status</TableHead>
@@ -224,6 +268,7 @@ export function PricingManagement() {
                             <TableRow key={h.id}>
                               <TableCell>₹{h.cost_per_km}</TableCell>
                               <TableCell>₹{h.base_fare}</TableCell>
+                              <TableCell>{h.min_weight}-{h.max_weight}kg</TableCell>
                               <TableCell>{format(new Date(h.effective_from), 'dd MMM yyyy')}</TableCell>
                               <TableCell>
                                 {h.effective_to ? format(new Date(h.effective_to), 'dd MMM yyyy') : '-'}

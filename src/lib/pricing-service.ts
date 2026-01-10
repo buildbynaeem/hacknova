@@ -7,6 +7,8 @@ export interface PricingConfig {
   vehicle_type: VehicleType;
   cost_per_km: number;
   base_fare: number;
+  min_weight: number;
+  max_weight: number;
   effective_from: string;
   effective_to: string | null;
   is_active: boolean;
@@ -83,7 +85,9 @@ export async function estimateCost(
 export async function updatePricing(
   vehicleType: VehicleType,
   costPerKm: number,
-  baseFare: number
+  baseFare: number,
+  minWeight: number,
+  maxWeight: number
 ): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   
@@ -101,6 +105,8 @@ export async function updatePricing(
       vehicle_type: vehicleType,
       cost_per_km: costPerKm,
       base_fare: baseFare,
+      min_weight: minWeight,
+      max_weight: maxWeight,
       created_by: user?.id,
     });
 
