@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BarChart3, Truck, Map, IndianRupee, Users, Shield, Leaf } from 'lucide-react';
+import { ArrowLeft, BarChart3, Truck, Map, IndianRupee, Users, Shield, Leaf, Package } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,6 +11,7 @@ import { PricingManagement } from '@/components/manager/PricingManagement';
 import { FleetManagement } from '@/components/manager/FleetManagement';
 import { DriverManagement } from '@/components/manager/DriverManagement';
 import { DriverApprovalPanel } from '@/components/manager/DriverApprovalPanel';
+import { ActiveDeliveriesPanel } from '@/components/manager/ActiveDeliveriesPanel';
 import EmissionsDashboard from '@/components/emissions/EmissionsDashboard';
 import { useUserRole } from '@/hooks/useUserRole';
 
@@ -59,10 +60,14 @@ const ManagerDashboard: React.FC = () => {
       {/* Main Content */}
       <main className="container mx-auto p-4 md:p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid mb-6">
+          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid mb-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="deliveries" className="flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Active Deliveries
             </TabsTrigger>
             <TabsTrigger value="emissions" className="flex items-center gap-2">
               <Leaf className="w-4 h-4" />
@@ -135,6 +140,10 @@ const ManagerDashboard: React.FC = () => {
             >
               <PricingManagement />
             </motion.div>
+          </TabsContent>
+
+          <TabsContent value="deliveries">
+            <ActiveDeliveriesPanel />
           </TabsContent>
 
           <TabsContent value="emissions">
