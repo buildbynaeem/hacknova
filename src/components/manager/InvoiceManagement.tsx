@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import jsPDF from 'jspdf';
 
 interface Invoice {
   id: string;
@@ -82,52 +83,165 @@ const InvoiceManagement: React.FC = () => {
   const totalTax = paidInvoices.reduce((sum, i) => sum + (i.tax_amount || 0), 0);
 
   const generateInvoicePDF = (invoice: Invoice) => {
-    const content = `
-═══════════════════════════════════════════════════════════════
-                         ROUTEZY LOGISTICS
-                       TAX INVOICE / BILL
-═══════════════════════════════════════════════════════════════
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Colors
+    const primaryColor: [number, number, number] = [249, 115, 22]; // Orange
+    const darkColor: [number, number, number] = [31, 41, 55];
+    const grayColor: [number, number, number] = [107, 114, 128];
+    const lightGray: [number, number, number] = [243, 244, 246];
 
-Invoice No: ${invoice.invoice_number}
-Date: ${format(new Date(invoice.created_at), 'dd MMM yyyy')}
-Status: ${invoice.is_paid ? 'PAID' : 'UNPAID'}
-${invoice.paid_at ? `Paid On: ${format(new Date(invoice.paid_at), 'dd MMM yyyy, hh:mm a')}` : ''}
+    // Header background
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, pageWidth, 45, 'F');
 
-───────────────────────────────────────────────────────────────
-                      SHIPMENT DETAILS
-───────────────────────────────────────────────────────────────
+    // Company name
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(28);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ROUTEZY', 20, 25);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Logistics & Delivery Solutions', 20, 33);
 
-Tracking ID: ${invoice.shipment?.tracking_id || 'N/A'}
-Receiver: ${invoice.shipment?.receiver_name || 'N/A'}
-Route: ${invoice.shipment?.pickup_city || 'N/A'} → ${invoice.shipment?.delivery_city || 'N/A'}
-Package Type: ${invoice.shipment?.package_type || 'N/A'}
-Weight: ${invoice.shipment?.weight || 'N/A'} kg
+    // Invoice title
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TAX INVOICE', pageWidth - 20, 25, { align: 'right' });
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(invoice.invoice_number, pageWidth - 20, 33, { align: 'right' });
 
-───────────────────────────────────────────────────────────────
-                      BILLING DETAILS
-───────────────────────────────────────────────────────────────
+    // Invoice details section
+    let yPos = 60;
+    
+    doc.setTextColor(...darkColor);
+    doc.setFontSize(10);
+    
+    // Left column - Invoice info
+    doc.setFont('helvetica', 'bold');
+    doc.text('Invoice Date:', 20, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(format(new Date(invoice.created_at), 'dd MMMM yyyy'), 55, yPos);
+    
+    yPos += 8;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Status:', 20, yPos);
+    
+    if (invoice.is_paid) {
+      doc.setTextColor(34, 197, 94);
+      doc.text('PAID', 55, yPos);
+    } else {
+      doc.setTextColor(249, 115, 22);
+      doc.text('UNPAID', 55, yPos);
+    }
+    doc.setTextColor(...darkColor);
+    
+    if (invoice.paid_at) {
+      yPos += 8;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Paid On:', 20, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text(format(new Date(invoice.paid_at), 'dd MMM yyyy, hh:mm a'), 55, yPos);
+    }
 
-Subtotal:                                      ₹${invoice.amount.toFixed(2)}
-GST (18%):                                     ₹${(invoice.tax_amount || 0).toFixed(2)}
-                                               ─────────────
-TOTAL AMOUNT:                                  ₹${invoice.total_amount.toFixed(2)}
+    // Shipment Details Box
+    yPos += 20;
+    doc.setFillColor(...lightGray);
+    doc.roundedRect(15, yPos - 5, pageWidth - 30, 55, 3, 3, 'F');
+    
+    doc.setTextColor(...primaryColor);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SHIPMENT DETAILS', 20, yPos + 5);
+    
+    doc.setTextColor(...darkColor);
+    doc.setFontSize(10);
+    yPos += 15;
+    
+    // Row 1
+    doc.setFont('helvetica', 'bold');
+    doc.text('Tracking ID:', 20, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(invoice.shipment?.tracking_id || 'N/A', 55, yPos);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Receiver:', 110, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(invoice.shipment?.receiver_name || 'N/A', 140, yPos);
+    
+    yPos += 10;
+    
+    // Row 2
+    doc.setFont('helvetica', 'bold');
+    doc.text('Route:', 20, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${invoice.shipment?.pickup_city || 'N/A'} → ${invoice.shipment?.delivery_city || 'N/A'}`, 55, yPos);
+    
+    yPos += 10;
+    
+    // Row 3
+    doc.setFont('helvetica', 'bold');
+    doc.text('Package:', 20, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${invoice.shipment?.package_type || 'N/A'} • ${invoice.shipment?.weight || 'N/A'} kg`, 55, yPos);
 
-═══════════════════════════════════════════════════════════════
-         Thank you for choosing Routezy Logistics!
-        For support: support@routezy.com | 1800-XXX-XXXX
-═══════════════════════════════════════════════════════════════
-    `.trim();
+    // Billing Details
+    yPos += 30;
+    doc.setTextColor(...primaryColor);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('BILLING DETAILS', 20, yPos);
+    
+    yPos += 10;
+    doc.setDrawColor(...grayColor);
+    doc.setLineWidth(0.5);
+    doc.line(15, yPos, pageWidth - 15, yPos);
+    
+    yPos += 10;
+    doc.setTextColor(...darkColor);
+    doc.setFontSize(10);
+    
+    // Subtotal
+    doc.setFont('helvetica', 'normal');
+    doc.text('Subtotal', 20, yPos);
+    doc.text(`₹${invoice.amount.toFixed(2)}`, pageWidth - 20, yPos, { align: 'right' });
+    
+    yPos += 8;
+    doc.setTextColor(...grayColor);
+    doc.text('GST (18%)', 20, yPos);
+    doc.text(`₹${(invoice.tax_amount || 0).toFixed(2)}`, pageWidth - 20, yPos, { align: 'right' });
+    
+    yPos += 5;
+    doc.setDrawColor(...grayColor);
+    doc.line(pageWidth - 80, yPos, pageWidth - 15, yPos);
+    
+    yPos += 10;
+    doc.setTextColor(...darkColor);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Total Amount', 20, yPos);
+    doc.setTextColor(...primaryColor);
+    doc.text(`₹${invoice.total_amount.toFixed(2)}`, pageWidth - 20, yPos, { align: 'right' });
 
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${invoice.invoice_number}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success('Invoice downloaded successfully');
+    // Footer
+    const footerY = doc.internal.pageSize.getHeight() - 30;
+    doc.setFillColor(...lightGray);
+    doc.rect(0, footerY - 5, pageWidth, 40, 'F');
+    
+    doc.setTextColor(...grayColor);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Thank you for choosing Routezy Logistics!', pageWidth / 2, footerY + 5, { align: 'center' });
+    doc.text('For support: support@routezy.com | 1800-XXX-XXXX', pageWidth / 2, footerY + 12, { align: 'center' });
+    doc.text('This is a computer-generated invoice and does not require a signature.', pageWidth / 2, footerY + 19, { align: 'center' });
+
+    // Save the PDF
+    doc.save(`${invoice.invoice_number}.pdf`);
+    toast.success('Invoice PDF downloaded successfully');
   };
 
   const handlePrintInvoice = (invoice: Invoice) => {
