@@ -89,30 +89,16 @@ export async function updatePricing(
   minWeight: number,
   maxWeight: number
 ): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  // Deactivate existing pricing for this vehicle type - must complete before insert
-  const { error: deactivateError } = await supabase
-    .from('pricing_config')
-    .update({ is_active: false, effective_to: new Date().toISOString().split('T')[0] })
-    .eq('vehicle_type', vehicleType)
-    .eq('is_active', true);
+  // Use atomic database function to avoid race conditions with unique constraint
+  const { error } = await supabase.rpc('update_vehicle_pricing', {
+    p_vehicle_type: vehicleType,
+    p_cost_per_km: costPerKm,
+    p_base_fare: baseFare,
+    p_min_weight: minWeight,
+    p_max_weight: maxWeight,
+  });
 
-  if (deactivateError) throw deactivateError;
-
-  // Insert new pricing after deactivation is complete
-  const { error: insertError } = await supabase
-    .from('pricing_config')
-    .insert({
-      vehicle_type: vehicleType,
-      cost_per_km: costPerKm,
-      base_fare: baseFare,
-      min_weight: minWeight,
-      max_weight: maxWeight,
-      created_by: user?.id,
-    });
-
-  if (insertError) throw insertError;
+  if (error) throw error;
 }
 
 export async function getPricingHistory(vehicleType: VehicleType): Promise<PricingConfig[]> {

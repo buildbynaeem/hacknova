@@ -831,6 +831,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_vehicle_pricing: {
+        Args: {
+          p_base_fare: number
+          p_cost_per_km: number
+          p_max_weight: number
+          p_min_weight: number
+          p_vehicle_type: Database["public"]["Enums"]["vehicle_type"]
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "driver" | "sender"
