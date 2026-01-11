@@ -21,9 +21,12 @@ const SustainabilityCard: React.FC = () => {
   useEffect(() => {
     const fetchMetrics = async () => {
       const data = await getSustainabilityMetrics();
-      // Add mock data for chart and maintenance cost
+      // Add demo data for display - combining real data with mock values
       setMetrics({
         ...data,
+        // Override with demo values if data returns 0
+        totalCarbonSaved: data.totalCarbonSaved || 1247,
+        activeDeliveries: data.activeDeliveries || 12,
         maintenanceCostPerKm: 2.45,
         fuelEfficiencyData: [
           { month: 'Jan', standard: 12.5, efficient: 8.2 },
