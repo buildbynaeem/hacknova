@@ -290,13 +290,14 @@ const ActiveDeliveryCard: React.FC = () => {
               <CardContent className="space-y-4">
                 {/* Live Emission Tracker */}
                 <LiveEmissionTracker
-                  distanceTraveled={Math.max(0, currentShipment.distance - (distanceToTarget ? distanceToTarget / 1000 : currentShipment.distance))}
-                  totalDistance={currentShipment.distance}
-                  vehicleType="MINI_TRUCK"
-                  fuelType="DIESEL"
-                  isActive={true}
-                  showDetails={true}
-                />
+          distanceTraveled={Math.max(0, currentShipment.distance - (distanceToTarget ? distanceToTarget / 1000 : currentShipment.distance))}
+          totalDistance={currentShipment.distance}
+          vehicleType="MINI_TRUCK"
+          fuelType="DIESEL"
+          isActive={true}
+          showDetails={true}
+          driverName={currentShipment.driverName}
+        />
 
                 <div className="p-3 bg-secondary rounded-lg">
                   <p className="text-xs text-muted-foreground">Drop Location</p>

@@ -13,6 +13,12 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const LandingPage: React.FC = () => {
   const features = [
@@ -48,79 +54,86 @@ const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-accent rounded-lg flex items-center justify-center">
-              <Truck className="w-5 h-5 text-accent-foreground" />
-            </div>
-            <span className="font-bold text-xl">Routezy</span>
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/20 backdrop-blur-sm">
+        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+          <div 
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={() => {
+              if (window.scrollY > 0) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              } else {
+                window.location.reload();
+              }
+            }}
+          >
+            <span className="font-bold text-2xl text-white tracking-tight">Routezy</span>
+          </div>
+          <div className="hidden md:flex items-center gap-8 text-white/90 font-medium">
+            <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
+            <a href="#mission" className="hover:text-white transition-colors">Mission</a>
+            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+            <a href="#about" className="hover:text-white transition-colors">About</a>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/login">
-              <Button variant="ghost">Login</Button>
+              <Button variant="ghost" className="text-white hover:text-white hover:bg-white/10">Login</Button>
             </Link>
             <Link to="/login">
-              <Button variant="accent">Get Started</Button>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6">
+                SIGN UP
+              </Button>
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
-        <div className="container mx-auto">
-          <div className="max-w-4xl mx-auto text-center">
+      <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/hero.jpg" 
+            alt="Background" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/50" />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10 mt-10">
+          <div className="max-w-3xl">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.8 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/10 rounded-full text-success mb-6">
-                <Leaf className="w-4 h-4" />
-                <span className="text-sm font-medium">India's Greenest Logistics Platform</span>
-              </div>
-              
-              <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-                Secure Custody.{' '}
-                <span className="text-gradient">Proof-to-Pay.</span>{' '}
-                Sustainable Delivery.
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
+                Secure Custody <br />
+                Sustainable Delivery
               </h1>
               
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                The complete logistics platform with OTP-verified handoffs, geofence-locked deliveries, 
-                and automatic invoice generation. Built for modern fleets.
+              <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-2xl font-light">
+              The complete logistics platform with OTP-verified handoffs, geofence-locked deliveries, and automatic invoice generation
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/login">
-                  <Button variant="hero" size="xl" className="w-full sm:w-auto">
-                    Start Free Trial
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </Link>
-                <Link to="/driver/active">
-                  <Button variant="outline" size="xl" className="w-full sm:w-auto">
-                    Try Driver Demo
+                  <Button className="bg-orange-500 hover:bg-orange-600 text-white text-lg h-14 px-8 font-bold rounded-sm w-full sm:w-auto">
+                    Get Started
+                    <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
               </div>
             </motion.div>
+          </div>
+        </div>
 
-            {/* Stats */}
-            <motion.div 
-              className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-            >
-              {stats.map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <p className="text-3xl md:text-4xl font-bold text-gradient">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
-                </div>
-              ))}
-            </motion.div>
+        {/* Trusted By Bar */}
+        <div className="absolute bottom-0 left-0 right-0 bg-[#0f2b26] py-6 border-t border-white/10">
+          <div className="container mx-auto px-4">
+            <p className="text-center text-xs font-bold tracking-[0.2em] text-white/60 mb-0 uppercase">
+              Trusted by industry leaders of all sizes
+            </p>
+            {/* You could add logos here if you had them */}
           </div>
         </div>
       </section>
@@ -163,10 +176,10 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* How it Works */}
-      <section className="py-20 px-4">
+      <section id="how-it-works" className="py-20 px-4">
         <div className="container mx-auto max-w-4xl">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            How Proof-to-Pay Works
+            How It Works
           </h2>
 
           <div className="space-y-6">
@@ -197,33 +210,92 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto">
-          <Card className="bg-gradient-hero text-primary-foreground overflow-hidden">
-            <CardContent className="p-8 md:p-12 text-center relative">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-              >
-                <Zap className="w-12 h-12 mx-auto mb-4 text-accent" />
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  Ready to Transform Your Fleet?
-                </h2>
-                <p className="text-lg opacity-80 max-w-2xl mx-auto mb-8">
-                  Join hundreds of logistics companies saving fuel, reducing disputes, 
-                  and building customer trust with Routezy.
-                </p>
-                <Link to="/login">
-                  <Button variant="accent" size="xl">
-                    Get Started Free
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </Link>
-              </motion.div>
-            </CardContent>
-          </Card>
+      {/* Our Mission */}
+      <section id="mission" className="py-20 px-4 bg-gray-50 text-gray-900">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">Our Mission</h2>
+            <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
+              To build the world's most trusted and sustainable logistics network, ensuring every delivery is secure, verifiable, and eco-friendly.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-8 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-6">
+                <Shield className="w-6 h-6 text-orange-600" />
+              </div>
+              <h3 className="font-bold text-xl mb-3 text-gray-900">Security First</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Eliminating theft and fraud with cryptographic proof of custody at every handoff point in the supply chain.
+              </p>
+            </div>
+            
+            <div className="p-8 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-6">
+                <Leaf className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="font-bold text-xl mb-3 text-gray-900">Sustainability</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Reducing carbon footprint through optimized routing, load consolidation, and green fleet incentives.
+              </p>
+            </div>
+            
+            <div className="p-8 bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
+              <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center mb-6">
+                <Zap className="w-6 h-6 text-yellow-600" />
+              </div>
+              <h3 className="font-bold text-xl mb-3 text-gray-900">Efficiency</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Streamlining operations with automated invoicing, instant payments, and real-time visibility.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section id="about" className="py-20 px-4 bg-white/5">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-8">About Routezy</h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Routezy is a next-generation logistics platform dedicated to securing the supply chain and promoting sustainability. 
+            Our mission is to provide transparent, secure, and efficient delivery solutions for businesses of all sizes. 
+            By leveraging cutting-edge technology like geofencing and real-time tracking, we ensure your goods are always in safe hands.
+          </p>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1">
+              <AccordionTrigger>How does the secure custody work?</AccordionTrigger>
+              <AccordionContent>
+                We use a combination of OTP verification at pickup and delivery, along with geofencing to ensure that packages are only handed over at the correct location to the authorized person.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2">
+              <AccordionTrigger>What is the 'Proof-to-Pay' feature?</AccordionTrigger>
+              <AccordionContent>
+                Our system automatically generates invoices and triggers payments as soon as the delivery is successfully verified, reducing administrative overhead and improving cash flow.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-3">
+              <AccordionTrigger>Can I track my shipments in real-time?</AccordionTrigger>
+              <AccordionContent>
+                Yes, both senders and recipients can track shipments in real-time, viewing the driver's location and estimated time of arrival.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-4">
+              <AccordionTrigger>Is Routezy suitable for small businesses?</AccordionTrigger>
+              <AccordionContent>
+                Absolutely! Routezy is designed to scale with your business, whether you're sending a few packages a week or thousands a day.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </section>
 
@@ -237,7 +309,7 @@ const LandingPage: React.FC = () => {
             <span className="font-bold">Routezy</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © 2024 Bharati Logistics. Built with 🌱 for sustainable delivery.
+            © 2024 Routezy. Built with 🌱 for sustainable delivery.
           </p>
         </div>
       </footer>

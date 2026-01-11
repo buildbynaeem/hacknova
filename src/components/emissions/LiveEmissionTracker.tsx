@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Leaf, Flame, Zap, TrendingDown, Fuel, Route } from 'lucide-react';
+import { Leaf, Flame, Zap, TrendingDown, Fuel, Route, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ interface LiveEmissionTrackerProps {
   fuelType?: string;
   isActive?: boolean;
   showDetails?: boolean;
+  driverName?: string;
 }
 
 const LiveEmissionTracker: React.FC<LiveEmissionTrackerProps> = ({
@@ -27,6 +28,7 @@ const LiveEmissionTracker: React.FC<LiveEmissionTrackerProps> = ({
   fuelType = 'DIESEL',
   isActive = true,
   showDetails = true,
+  driverName,
 }) => {
   const [animatedCO2, setAnimatedCO2] = useState(0);
   const [animatedSaved, setAnimatedSaved] = useState(0);
@@ -119,6 +121,19 @@ const LiveEmissionTracker: React.FC<LiveEmissionTrackerProps> = ({
             </Badge>
           )}
         </div>
+
+        {/* Driver Info */}
+        {driverName && (
+          <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-secondary/50 rounded-lg border border-border/50">
+            <div className="p-1.5 bg-background rounded-full border border-border">
+              <User className="w-3.5 h-3.5 text-muted-foreground" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Driver</span>
+              <span className="text-sm font-medium leading-none">{driverName}</span>
+            </div>
+          </div>
+        )}
 
         {/* Main Stats */}
         <div className="grid grid-cols-2 gap-3 mb-3">
