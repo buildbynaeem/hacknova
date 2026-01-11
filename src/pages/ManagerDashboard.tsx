@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BarChart3, Truck, Map, IndianRupee, Users, Shield, Leaf, Package, Fuel } from 'lucide-react';
+import { ArrowLeft, BarChart3, Truck, Map, IndianRupee, Users, Shield, Leaf, Package, Fuel, Brain } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,6 +15,7 @@ import { ActiveDeliveriesPanel } from '@/components/manager/ActiveDeliveriesPane
 import { DamageReportsPanel } from '@/components/manager/DamageReportsPanel';
 import FuelMetricsPanel from '@/components/manager/FuelMetricsPanel';
 import EmissionsDashboard from '@/components/emissions/EmissionsDashboard';
+import DemandForecast from '@/components/manager/DemandForecast';
 import { useUserRole } from '@/hooks/useUserRole';
 
 const FleetMap = lazy(() => import('@/components/map/FleetMap'));
@@ -62,7 +63,7 @@ const ManagerDashboard: React.FC = () => {
       {/* Main Content */}
       <main className="container mx-auto p-4 md:p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid mb-6">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid mb-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -78,6 +79,10 @@ const ManagerDashboard: React.FC = () => {
             <TabsTrigger value="emissions" className="flex items-center gap-2">
               <Leaf className="w-4 h-4" />
               <span className="hidden sm:inline">Emissions</span>
+            </TabsTrigger>
+            <TabsTrigger value="forecast" className="flex items-center gap-2">
+              <Brain className="w-4 h-4" />
+              <span className="hidden sm:inline">Demand Forecast</span>
             </TabsTrigger>
           </TabsList>
 
@@ -167,6 +172,10 @@ const ManagerDashboard: React.FC = () => {
 
           <TabsContent value="emissions">
             <EmissionsDashboard />
+          </TabsContent>
+
+          <TabsContent value="forecast">
+            <DemandForecast />
           </TabsContent>
         </Tabs>
       </main>
