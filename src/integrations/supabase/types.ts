@@ -419,6 +419,7 @@ export type Database = {
           is_active: boolean
           max_weight: number
           min_weight: number
+          route_type: string
           updated_at: string
           vehicle_type: Database["public"]["Enums"]["vehicle_type"]
         }
@@ -433,6 +434,7 @@ export type Database = {
           is_active?: boolean
           max_weight?: number
           min_weight?: number
+          route_type?: string
           updated_at?: string
           vehicle_type: Database["public"]["Enums"]["vehicle_type"]
         }
@@ -447,6 +449,7 @@ export type Database = {
           is_active?: boolean
           max_weight?: number
           min_weight?: number
+          route_type?: string
           updated_at?: string
           vehicle_type?: Database["public"]["Enums"]["vehicle_type"]
         }
@@ -837,6 +840,7 @@ export type Database = {
           p_cost_per_km: number
           p_max_weight: number
           p_min_weight: number
+          p_route_type: string
           p_vehicle_type: Database["public"]["Enums"]["vehicle_type"]
         }
         Returns: string
