@@ -91,15 +91,17 @@ export async function updatePricing(
 ): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   
-  // Deactivate existing pricing for this vehicle type
-  await supabase
+  // Deactivate existing pricing for this vehicle type - must complete before insert
+  const { error: deactivateError } = await supabase
     .from('pricing_config')
     .update({ is_active: false, effective_to: new Date().toISOString().split('T')[0] })
     .eq('vehicle_type', vehicleType)
     .eq('is_active', true);
 
-  // Insert new pricing
-  const { error } = await supabase
+  if (deactivateError) throw deactivateError;
+
+  // Insert new pricing after deactivation is complete
+  const { error: insertError } = await supabase
     .from('pricing_config')
     .insert({
       vehicle_type: vehicleType,
@@ -110,7 +112,7 @@ export async function updatePricing(
       created_by: user?.id,
     });
 
-  if (error) throw error;
+  if (insertError) throw insertError;
 }
 
 export async function getPricingHistory(vehicleType: VehicleType): Promise<PricingConfig[]> {
