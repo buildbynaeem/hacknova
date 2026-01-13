@@ -19,6 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import ScrollSequence from '@/components/ui/ScrollSequence';
 
 const LandingPage: React.FC = () => {
   const features = [
@@ -87,20 +88,18 @@ const LandingPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/hero.jpg" 
-            alt="Background" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/50" />
-        </div>
-
-        <div className="container mx-auto px-4 relative z-10 mt-10">
-          <div className="max-w-3xl">
+      {/* Hero Section with Scroll Sequence */}
+      <ScrollSequence
+        frameCount={240}
+        basePath="/scroll"
+        filenamePrefix="ezgif-frame-"
+        filenameSuffix=".jpg"
+        height="350vh"
+      >
+        <div className="absolute inset-0 bg-black/50" /> {/* Overlay for text readability */}
+        
+        <div className="container mx-auto px-4 relative z-10 h-full flex flex-col justify-center pb-20">
+          <div className="max-w-3xl pt-20">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -128,15 +127,14 @@ const LandingPage: React.FC = () => {
         </div>
 
         {/* Trusted By Bar */}
-        <div className="absolute bottom-0 left-0 right-0 bg-[#0f2b26] py-6 border-t border-white/10">
+        <div className="absolute bottom-0 left-0 right-0 bg-[#0f2b26] py-6 border-t border-white/10 z-20">
           <div className="container mx-auto px-4">
             <p className="text-center text-xs font-bold tracking-[0.2em] text-white/60 mb-0 uppercase">
               Trusted by industry leaders of all sizes
             </p>
-            {/* You could add logos here if you had them */}
           </div>
         </div>
-      </section>
+      </ScrollSequence>
 
       {/* Features Section */}
       <section className="py-20 px-4 bg-secondary/30">
@@ -174,6 +172,9 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Visual Journey - Scroll Sequence */}
+      {/* Moved to Hero Section */}
 
       {/* How it Works */}
       <section id="how-it-works" className="py-20 px-4">
