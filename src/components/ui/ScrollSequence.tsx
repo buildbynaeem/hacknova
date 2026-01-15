@@ -145,12 +145,7 @@ const ScrollSequence: React.FC<ScrollSequenceProps> = ({
         {!isLoaded && (
           <div className="absolute inset-0 flex items-center justify-center text-white z-50 bg-black">
             <div className="flex flex-col items-center gap-4">
-              <div className="w-48 h-1 bg-gray-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-white transition-all duration-300 ease-out" 
-                  style={{ width: `${loadProgress}%` }}
-                />
-              </div>
+              <div className="loader"></div>
               <span className="text-xs font-mono uppercase tracking-widest text-white/50">
                 Loading Experience {Math.round(loadProgress)}%
               </span>
