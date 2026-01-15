@@ -1,73 +1,101 @@
-# Welcome to your Lovable project
+## Routezy
 
-## Project info
+Routezy is a sustainable logistics and delivery platform built on Vite + React.
+It focuses on secure custody, OTP-verified handoffs, carbon efficiency tracking,
+and a modern landing page with scroll-based animations.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+### Tech Stack
 
-## How can I edit this code?
+- Vite
+- React (TypeScript)
+- shadcn/ui
+- Tailwind CSS
+- Zustand
+- React Router
+- Leaflet / React‑Leaflet
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## Getting Started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Prerequisites
 
-Changes made via Lovable will be committed automatically to this repo.
+- Node.js (LTS recommended)
+- npm
 
-**Use your preferred IDE**
+### Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```bash
+git clone <YOUR_REPO_URL>
+cd hacknova
+npm install
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Development
 
-Follow these steps:
+Run the local dev server:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Then open the printed localhost URL in your browser.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Production Build
 
-**Use GitHub Codespaces**
+```bash
+npm run build
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Preview the production build locally:
 
-## What technologies are used for this project?
+```bash
+npm run preview
+```
 
-This project is built with:
+### Linting
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```bash
+npm run lint
+```
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## Key Features
 
-## Can I connect a custom domain to my Lovable project?
+- Landing page with hero scroll sequence built from frame images
+- "Our Mission" light-mode section
+- Navigation to How It Works, Mission, FAQ, and About
+- Carbon efficiency tracker with live emission stats
+- Driver data surfaced inside the emissions tracker
+- Route, map, and geolocation integrations
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Project Structure
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+High-level structure (not exhaustive):
+
+- `src/pages` – main routes (e.g. `LandingPage`)
+- `src/components` – UI, emissions, driver, and animation components
+- `src/store` – Zustand stores (driver state, etc.)
+- `public/scroll` – frame images for the hero scroll animation
+
+---
+
+## Deployment
+
+This project is configured as a Vite SPA and can be deployed to
+any static hosting provider (for example, Vercel) using the
+`npm run build` output in the `dist` directory.
+
+Make sure your hosting is configured to serve `index.html` for
+all SPA routes.
+
+---
+
+## Contributing
+
+1. Create a new branch for your change.
+2. Make updates and ensure `npm run lint` passes.
+3. Open a pull request with a clear description of the change.
