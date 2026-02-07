@@ -1,1 +1,16 @@
 project_id = "bbtmezwnazsbyxvpefml"
+
+[functions.add-driver]
+verify_jwt = false
+
+[functions.demand-forecast]
+verify_jwt = false
+
+[functions.razorpay-create-order]
+verify_jwt = false
+
+[functions.razorpay-verify-payment]
+verify_jwt = false
+
+[functions.ai-insights]
+verify_jwt = false
