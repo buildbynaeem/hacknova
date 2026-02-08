@@ -9,8 +9,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, Cart
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import TamboWrapper from '@/components/tambo/TamboProvider';
-import TamboChat from '@/components/tambo/TamboChat';
+import AIChatAssistant from './AIChatAssistant';
 
 const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -173,7 +172,7 @@ const GenerativeDashboard: React.FC = () => {
         </div>
         <Badge variant="outline" className="gap-1">
           <Sparkles className="w-3 h-3" />
-          Powered by Tambo AI
+          Powered by Lovable AI
         </Badge>
       </div>
 
@@ -191,9 +190,7 @@ const GenerativeDashboard: React.FC = () => {
 
         <TabsContent value="chat" className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
-            <TamboWrapper>
-              <TamboChat />
-            </TamboWrapper>
+            <AIChatAssistant />
             
             {/* Quick Stats Sidebar */}
             <div className="space-y-4">
