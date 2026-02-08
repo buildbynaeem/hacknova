@@ -9,6 +9,11 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    rollupOptions: {
+      external: ["quansync"],
+    },
+  },
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
